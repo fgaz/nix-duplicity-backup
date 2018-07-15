@@ -6,8 +6,8 @@ let
   gcfg = config.services.duplicity-backup;
 
   duplicityGenKeys = pkgs.writeScriptBin "duplicity-gen-keys" ''
-    rm -rf ${gcfg.envDir}
-    rm -rf ${gcfg.pgpDir}
+    [ -x ${gcfg.envDir} ] && echo "The environment directory exists." && exit 1
+    [ -x ${gcfg.pgpDir} ] && echo "The PGP home directory exists." && exit 1
 
     umask u=rwx,g=,o=
     mkdir -p ${gcfg.envDir}
