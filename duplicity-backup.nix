@@ -21,7 +21,7 @@ in
 
       envDir = mkOption {
         type = types.string;
-        default = "${rootDir}/env";
+        default = "${gcfg.rootDir}/env";
         description = ''
           Directory of bash scripts to `source`,
           currently used for declaring AWS keys and secrets
@@ -30,7 +30,7 @@ in
 
       pgpDir = mkOption {
         type = types.string;
-        default = "${rootDir}/gnupg";
+        default = "${gcfg.rootDir}/gnupg";
         description = ''
           Directory of bash scripts to `source`,
           currently used for declaring AWS keys and secrets
