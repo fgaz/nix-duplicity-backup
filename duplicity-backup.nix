@@ -47,7 +47,7 @@ let
       --archive-dir ${gcfg.cachedir} \
       --name ${name} \
       --gpg-options "--homedir=${gcfg.pgpDir}" \
-      --encrypt-key "${gcfg.keyId}" \
+      --encrypt-key "Duplicity Backup" \
       ${concatStringsSep " " (map (v: "--exclude ${v}") cfg.excludes)} \
       ${concatStringsSep " " (map (v: "--include ${v}") cfg.includes)} \
       ${cfg.destination} \
@@ -83,13 +83,6 @@ in
         description = ''
           Directory of bash scripts to `source`,
           currently used for declaring AWS keys and secrets
-        '';
-      };
-
-      keyId = mkOption {
-        type = types.string;
-        default = "00000000";
-        description = ''
         '';
       };
 
@@ -253,7 +246,7 @@ in
             --archive-dir ${gcfg.cachedir} \
             --name ${name} \
             --gpg-options "--homedir=${gcfg.pgpDir}" \
-            --encrypt-key "${gcfg.keyId}" \
+            --encrypt-key "Duplicity Backup" \
             ${concatStringsSep " " (map (v: "--exclude ${v}") cfg.excludes)} \
             ${concatStringsSep " " (map (v: "--include ${v}") cfg.includes)} \
             ${concatStringsSep " " cfg.directories} \
