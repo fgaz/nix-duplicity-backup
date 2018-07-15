@@ -269,7 +269,10 @@ in
         #'';
 
         script = ''
-          source ${gcfg.envDir}/*.sh
+          ls ${gcfg.envDir}/*.sh
+          for i in ${gcfg.envDir}/*; do
+             source $i
+          done
 
           mkdir -p ${cfg.cachedir}
           chmod 0700 ${cfg.cachedir}
