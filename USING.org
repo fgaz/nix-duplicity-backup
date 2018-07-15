@@ -1,4 +1,9 @@
 #+TITLE: Nix duplicity backup
+* WARNING
+  Every file path should be in the form of string unless stated otherwise.
+
+  If the file path is provided as a raw Nix path,
+  you are compromising the security of the system.
 
 * Add the module to NixOS and set its configuration
   Add the ~duplicity-backup.nix~ file to the list of NixOS imports,
