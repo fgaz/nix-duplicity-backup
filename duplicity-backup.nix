@@ -22,7 +22,19 @@ let
     echo "export AWS_ACCESS_KEY_ID=\"$AWS_ACCESS_KEY_ID\""         >  ${gcfg.envDir}/10-aws.sh
     echo "export AWS_SECRET_ACCESS_KEY=\"$AWS_SECRET_ACCESS_KEY\"" >> ${gcfg.envDir}/10-aws.sh
 
-    gpg --homedir ${gcfg.pgpDir} --generate-key --passphrase "" --pinentry-mode loopback
+    ${pkgs.expect}/bin/expect << EOF
+      set timeout 10
+
+      spawn ${pkgs.gnupg}/bin/gpg --homedir ${gcfg.pgpDir} --generate-key --passphrase "" --pinentry-mode loopback
+
+      expect "Real name: " { send "Duplicity Backup\r" }
+      expect "Email address: " { send "\r" }
+      expect "Change (N)ame, (E)mail, or (O)kay/(Q)uit? " { send "O\r" }
+
+      expect "pub" # Required to flush the last command
+
+      interact
+    EOF
   '';
 
   restoreScripts = mapAttrsToList (name: cfg: pkgs.writeScriptBin "duplicity-restore-${name}" ''
