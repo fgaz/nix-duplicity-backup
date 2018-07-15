@@ -62,7 +62,7 @@ in
 
               pgpKeyFile = mkOption {
                 type = types.path;
-                default = gcfg.gpgKeyFile;
+                default = gcfg.pgpKeyFile;
                 description = ''
                   Set a specific ___ for this archive. This defaults to
                   if left unspecified.
