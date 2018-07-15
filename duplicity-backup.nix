@@ -235,7 +235,6 @@ in
           duplicity \
             --archive-dir ${cfg.cachedir} \
             --name ${name} \
-            --ssh-options "-i '${cfg.sshIdentityFile}' -oUserKnownHostsFile='${cfg.knownHostsFile}'" \
             # --gpg-options "--no-default-keyring --keyring ${cfg.keyring}" \
             --encrypt-sign-key ${cfg.keyId} \
             ${concatStringsSep " " (map (v: "--exclude ${v}") cfg.excludes)} \
