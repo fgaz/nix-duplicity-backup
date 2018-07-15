@@ -4,6 +4,22 @@ with lib;
 
 let
   gcfg = config.services.duplicity-backup;
+  restoreScripts = mapAttrsToList (name: cfg: pkgs.writeScriptBin "duplicity-restore-${name}" ''
+    export PASSPHRASE=""
+    for i in ${gcfg.envDir}/*; do
+       source $i
+    done
+
+    ${pkgs.duplicity}/bin/duplicity \
+      --archive-dir ${gcfg.cachedir} \
+      --name ${name} \
+      --gpg-options "--homedir=${gcfg.pgpDir}" \
+      --encrypt-key "${gcfg.keyId}" \
+      ${concatStringsSep " " (map (v: "--exclude ${v}") cfg.excludes)} \
+      ${concatStringsSep " " (map (v: "--include ${v}") cfg.includes)} \
+      ${cfg.destination} \
+      ${concatStringsSep " " cfg.directories}
+  '') gcfg.archives;
 in
 {
   options = {
@@ -242,6 +258,6 @@ in
         wantedBy = [ "timers.target" ];
       }) gcfg.archives;
 
-    environment.systemPackages = [ pkgs.duplicity ];
+    environment.systemPackages = [ pkgs.duplicity ] ++ restoreScripts;
   };
 }
