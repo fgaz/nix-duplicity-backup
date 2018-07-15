@@ -10,9 +10,27 @@ in
     services.duplicity-backup = {
       enable = mkEnableOption "periodic duplicity backups";
 
+      rootDir = mkOption {
+        type = types.string;
+        default = "/var/keys/duplicity";
+        description = ''
+          Directory of bash scripts to `source`,
+          currently used for declaring AWS keys and secrets
+        '';
+      };
+
       envDir = mkOption {
         type = types.string;
-        default = "/var/keys/duplicity/env";
+        default = "${rootDir}/env";
+        description = ''
+          Directory of bash scripts to `source`,
+          currently used for declaring AWS keys and secrets
+        '';
+      };
+
+      pgpDir = mkOption {
+        type = types.string;
+        default = "${rootDir}/gnupg";
         description = ''
           Directory of bash scripts to `source`,
           currently used for declaring AWS keys and secrets
