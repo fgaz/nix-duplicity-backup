@@ -214,7 +214,6 @@ in
           mkdir -p ${cfg.cachedir}
           chmod 0700 ${cfg.cachedir}
           gpg --import ${cfg.pgpKeyFile} # FIXME
-          export PASSPHRASE=$(cat ${cfg.passphraseFile})
           duplicity \
             --archive-dir ${cfg.cachedir} \
             --name ${name} \
