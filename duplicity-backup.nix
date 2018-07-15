@@ -276,5 +276,6 @@ in
         wantedBy = [ "timers.target" ];
       }) gcfg.archives;
 
+    environment.systemPackages = [ pkgs.duplicity ];
   };
 }
