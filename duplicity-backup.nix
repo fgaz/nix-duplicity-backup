@@ -19,20 +19,6 @@ in
         '';
       };
 
-      sshIdentityFile = mkOption {
-        type = types.path;
-        default = /var/empty;
-        description = ''
-        '';
-      };
-
-      knownHostsFile = mkOption {
-        type = types.path;
-        default = /var/empty;
-        description = ''
-        '';
-      };
-
       keyring = mkOption {
         type = types.path;
         default = /var/empty;
@@ -65,36 +51,6 @@ in
         type = types.attrsOf (types.submodule ({ config, ... }:
           {
             options = {
-
-              requiredNixopsKeys = mkOption {
-                type = types.listOf types.string;
-                default = [ ];
-                example = [ "my-passphrase" "my-ssh-id" ];
-                description = ''
-                  A list of nixops keys on which to depend
-                  (will create the necessary <keyname>-key.service
-                  systemd dependencies)
-                '';
-              };
-
-              sshIdentityFile = mkOption {
-                type = types.path;
-                default = gcfg.sshIdentityFile;
-                description = ''
-                  Set a specific ___ for this archive. This defaults to
-                  if left unspecified.
-                '';
-              };
-
-              knownHostsFile = mkOption {
-                type = types.path;
-                default = gcfg.knownHostsFile;
-                description = ''
-                  Set a specific ___ for this archive. This defaults to
-                  if left unspecified.
-                '';
-              };
-
               keyring = mkOption {
                 type = types.path;
                 default = gcfg.keyring;
@@ -256,10 +212,8 @@ in
     systemd.services =
       mapAttrs' (name: cfg: nameValuePair "duplicity-${name}" {
         description = "Duplicity archive '${name}'";
-        requires    = [ "network-online.target" ]
-                   ++ (map (k: k + "-key.service") cfg.requiredNixopsKeys);
-        after       = [ "network-online.target" ]
-                   ++ (map (k: k + "-key.service") cfg.requiredNixopsKeys);
+        requires    = [ "network-online.target" ];
+        after       = [ "network-online.target" ];
 
         path = with pkgs; [ iputils duplicity openssh gnupg utillinux ];
 
