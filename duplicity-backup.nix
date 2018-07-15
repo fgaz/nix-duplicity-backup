@@ -4,6 +4,27 @@ with lib;
 
 let
   gcfg = config.services.duplicity-backup;
+
+  duplicityGenKeys = pkgs.writeScriptBin "duplicity-gen-keys" ''
+    rm -rf ${gcfg.envDir}
+    rm -rf ${gcfg.pgpDir}
+
+    umask u=rwx,g=,o=
+    mkdir -p ${gcfg.envDir}
+    mkdir -p ${gcfg.pgpDir}
+    umask 0022
+
+    stty -echo
+    printf "AWS_ACCESS_KEY_ID="; read AWS_ACCESS_KEY_ID
+    printf "AWS_SECRET_ACCESS_KEY="; read AWS_SECRET_ACCESS_KEY
+    stty echo
+
+    echo "export AWS_ACCESS_KEY_ID=\"$AWS_ACCESS_KEY_ID\""         >  ${gcfg.envDir}/10-aws.sh
+    echo "export AWS_SECRET_ACCESS_KEY=\"$AWS_SECRET_ACCESS_KEY\"" >> ${gcfg.envDir}/10-aws.sh
+
+    gpg --homedir ${gcfg.pgpDir} --generate-key --passphrase "" --pinentry-mode loopback
+  '';
+
   restoreScripts = mapAttrsToList (name: cfg: pkgs.writeScriptBin "duplicity-restore-${name}" ''
     export PASSPHRASE=""
     for i in ${gcfg.envDir}/*; do
@@ -244,6 +265,6 @@ in
         wantedBy = [ "timers.target" ];
       }) gcfg.archives;
 
-    environment.systemPackages = [ pkgs.duplicity ] ++ restoreScripts;
+    environment.systemPackages = [ pkgs.duplicity duplicityGenKeys ] ++ restoreScripts;
   };
 }
