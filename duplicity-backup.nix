@@ -10,6 +10,15 @@ in
     services.duplicity-backup = {
       enable = mkEnableOption "periodic duplicity backups";
 
+      envDir = mkOption {
+        type = types.string;
+        default = "/var/keys/duplicity-env";
+        description = ''
+          Directory of bash scripts to `source`,
+          currently used for declaring AWS keys and secrets
+        '';
+      };
+
       sshIdentityFile = mkOption {
         type = types.path;
         default = /var/empty;
@@ -260,6 +269,8 @@ in
         #'';
 
         script = ''
+          source ${gcfg.envDir}/*.sh
+
           mkdir -p ${cfg.cachedir}
           chmod 0700 ${cfg.cachedir}
           gpg --import ${cfg.pgpKeyFile} # FIXME
