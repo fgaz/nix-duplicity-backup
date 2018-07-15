@@ -37,13 +37,6 @@ in
         '';
       };
 
-      keyring = mkOption {
-        type = types.string;
-        default = "/var/empty";
-        description = ''
-        '';
-      };
-
       keyId = mkOption {
         type = types.string;
         default = "00000000";
@@ -58,46 +51,19 @@ in
         '';
       };
 
+      cachedir = mkOption {
+        type = types.string;
+        default = "/var/cache/duplicity/";
+        description = ''
+          The cache allows duplicity to identify previously stored data
+          blocks, reducing archival time and bandwidth usage.
+        '';
+      };
+
       archives = mkOption {
         type = types.attrsOf (types.submodule ({ config, ... }:
           {
             options = {
-              keyring = mkOption {
-                type = types.string;
-                default = gcfg.keyring;
-                description = ''
-                  Set a specific ___ for this archive. This defaults to
-                  if left unspecified.
-                '';
-              };
-
-              pgpKeyFile = mkOption {
-                type = types.string;
-                default = gcfg.pgpKeyFile;
-                description = ''
-                  Set a specific ___ for this archive. This defaults to
-                  if left unspecified.
-                '';
-              };
-
-              keyId = mkOption {
-                type = types.string;
-                default = gcfg.keyId;
-                description = ''
-                  Set a specific ___ for this archive. This defaults to
-                  if left unspecified.
-                '';
-              };
-
-              cachedir = mkOption {
-                type = types.string;
-                default = "/var/cache/duplicity/";
-                description = ''
-                  The cache allows duplicity to identify previously stored data
-                  blocks, reducing archival time and bandwidth usage.
-                '';
-              };
-
               destination = mkOption {
                 type = types.string;
                 default = "";
@@ -217,7 +183,7 @@ in
         requires    = [ "network-online.target" ];
         after       = [ "network-online.target" ];
 
-        path = with pkgs; [ iputils duplicity openssh gnupg utillinux ];
+        path = with pkgs; [ gnupg ];
 
         # make sure that the backup server is reachable
         #preStart = ''
@@ -229,16 +195,16 @@ in
              source $i
           done
 
-          mkdir -p ${cfg.cachedir}
+          mkdir -p ${gcfg.cachedir}
           mkdir -p ${gcfg.pgpDir}
-          chmod 0700 ${cfg.cachedir}
+          chmod 0700 ${gcfg.cachedir}
           chmod 0700 ${gcfg.pgpDir}
           gpg --homedir ${gcfg.pgpDir} --import ${gcfg.rootDir}/test.pub
 
           ${pkgs.expect}/bin/expect << EOF
             set timeout 10
 
-            spawn ${pkgs.gnupg}/bin/gpg --homedir ${gcfg.pgpDir} --edit-key ${cfg.keyId} '*' --yes trust quit
+            spawn ${pkgs.gnupg}/bin/gpg --homedir ${gcfg.pgpDir} --edit-key ${gcfg.keyId} '*' --yes trust quit
 
             expect "Your decision? " { send "5\r" }
             expect "Do you really want to set this key to ultimate trust? (y/N) " { send "y\r" }
@@ -248,11 +214,11 @@ in
             interact
           EOF
 
-          duplicity \
-            --archive-dir ${cfg.cachedir} \
+          ${pkgs.duplicity}/bin/duplicity \
+            --archive-dir ${gcfg.cachedir} \
             --name ${name} \
             --gpg-options "--homedir=${gcfg.pgpDir}" \
-            --encrypt-key ${cfg.keyId} \
+            --encrypt-key ${gcfg.keyId} \
             ${concatStringsSep " " (map (v: "--exclude ${v}") cfg.excludes)} \
             ${concatStringsSep " " (map (v: "--include ${v}") cfg.includes)} \
             ${concatStringsSep " " cfg.directories} \
