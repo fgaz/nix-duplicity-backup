@@ -1,0 +1,40 @@
+#+TITLE: Nix duplicity backup
+
+* Add the module to NixOS and set its configuration
+  Add the ~duplicity-backup.nix~ file to the list of NixOS imports,
+  and enable it by setting the ~services.duplicity-backup.enable~ option to ~true~.
+
+  You can add directories to backup with the ~services.duplicity-backup.archives~ option.
+
+  Currently, ~directories~ seems to only accept one path.
+
+  Example:
+  #+BEGIN_src nix
+  imports =
+    [ /path/to/nix-duplicity-backup/duplicity-backup.nix
+    ];
+
+  services.duplicity-backup = {
+    enable = true;
+    archives = {
+      foo = {
+        destination = "s3://s3.ap-southeast-1.amazonaws.com/bar/foo";
+        directories = [
+          "/path/to/foo"
+        ];
+      };
+    };
+  };
+  #+END_src
+
+* Generating initial directory tree
+  Run ~duplicity-gen-keys~ and it will ask for
+  your AWS access key ID and AWS secret access key.
+
+* Test if it works
+  ~systemctl start duplicity-foo.service~
+  where ~foo~ is the name of the attrset under ~archives~.
+
+* Restoring
+  ~sudo duplicity-restore-foo~
+  where ~foo~ is the name of the attrset under ~archives~.
