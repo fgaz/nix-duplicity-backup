@@ -12,7 +12,7 @@ in
 
       envDir = mkOption {
         type = types.string;
-        default = "/var/keys/duplicity-env";
+        default = "/var/keys/duplicity/env";
         description = ''
           Directory of bash scripts to `source`,
           currently used for declaring AWS keys and secrets
