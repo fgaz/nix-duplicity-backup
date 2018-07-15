@@ -40,13 +40,6 @@ in
         '';
       };
 
-      passphraseFile = mkOption {
-        type = types.string;
-        default = /var/empty;
-        description = ''
-        '';
-      };
-
       archives = mkOption {
         type = types.attrsOf (types.submodule ({ config, ... }:
           {
@@ -63,15 +56,6 @@ in
               pgpKeyFile = mkOption {
                 type = types.string;
                 default = gcfg.pgpKeyFile;
-                description = ''
-                  Set a specific ___ for this archive. This defaults to
-                  if left unspecified.
-                '';
-              };
-
-              passphraseFile = mkOption {
-                type = types.string;
-                default = gcfg.passphraseFile;
                 description = ''
                   Set a specific ___ for this archive. This defaults to
                   if left unspecified.
