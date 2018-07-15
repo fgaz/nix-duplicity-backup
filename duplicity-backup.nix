@@ -223,7 +223,6 @@ in
         #'';
 
         script = ''
-          ls ${gcfg.envDir}/*.sh
           for i in ${gcfg.envDir}/*; do
              source $i
           done
