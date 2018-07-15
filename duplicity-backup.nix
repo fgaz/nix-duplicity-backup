@@ -20,8 +20,8 @@ in
       };
 
       keyring = mkOption {
-        type = types.path;
-        default = /var/empty;
+        type = types.string;
+        default = "/var/empty";
         description = ''
         '';
       };
@@ -34,14 +34,14 @@ in
       };
 
       pgpKeyFile = mkOption {
-        type = types.path;
-        default = /var/empty;
+        type = types.string;
+        default = "/var/empty";
         description = ''
         '';
       };
 
       passphraseFile = mkOption {
-        type = types.path;
+        type = types.string;
         default = /var/empty;
         description = ''
         '';
@@ -52,7 +52,7 @@ in
           {
             options = {
               keyring = mkOption {
-                type = types.path;
+                type = types.string;
                 default = gcfg.keyring;
                 description = ''
                   Set a specific ___ for this archive. This defaults to
@@ -61,7 +61,7 @@ in
               };
 
               pgpKeyFile = mkOption {
-                type = types.path;
+                type = types.string;
                 default = gcfg.pgpKeyFile;
                 description = ''
                   Set a specific ___ for this archive. This defaults to
@@ -70,7 +70,7 @@ in
               };
 
               passphraseFile = mkOption {
-                type = types.path;
+                type = types.string;
                 default = gcfg.passphraseFile;
                 description = ''
                   Set a specific ___ for this archive. This defaults to
@@ -88,7 +88,7 @@ in
               };
 
               cachedir = mkOption {
-                type = types.path;
+                type = types.string;
                 default = "/var/cache/duplicity/";
                 description = ''
                   The cache allows duplicity to identify previously stored data
@@ -118,7 +118,7 @@ in
               };
 
               directories = mkOption {
-                type = types.listOf types.path;
+                type = types.listOf types.string;
                 default = [];
                 description = "List of filesystem paths to archive.";
               };
