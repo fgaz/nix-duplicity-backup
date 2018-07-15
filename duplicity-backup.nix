@@ -230,13 +230,29 @@ in
           done
 
           mkdir -p ${cfg.cachedir}
+          mkdir -p ${gcfg.pgpDir}
           chmod 0700 ${cfg.cachedir}
-          gpg --import ${cfg.pgpKeyFile} # FIXME
+          chmod 0700 ${gcfg.pgpDir}
+          gpg --homedir ${gcfg.pgpDir} --import ${gcfg.rootDir}/test.pub
+
+          ${pkgs.expect}/bin/expect << EOF
+            set timeout 10
+
+            spawn ${pkgs.gnupg}/bin/gpg --homedir ${gcfg.pgpDir} --edit-key ${cfg.keyId} '*' --yes trust quit
+
+            expect "Your decision? " { send "5\r" }
+            expect "Do you really want to set this key to ultimate trust? (y/N) " { send "y\r" }
+
+            expect "pub" # Required to flush the last command
+
+            interact
+          EOF
+
           duplicity \
             --archive-dir ${cfg.cachedir} \
             --name ${name} \
-            # --gpg-options "--no-default-keyring --keyring ${cfg.keyring}" \
-            --encrypt-sign-key ${cfg.keyId} \
+            --gpg-options "--homedir=${gcfg.pgpDir}" \
+            --encrypt-key ${cfg.keyId} \
             ${concatStringsSep " " (map (v: "--exclude ${v}") cfg.excludes)} \
             ${concatStringsSep " " (map (v: "--include ${v}") cfg.includes)} \
             ${concatStringsSep " " cfg.directories} \
