@@ -15,8 +15,8 @@ let
     umask 0022
 
     stty -echo
-    printf "AWS_ACCESS_KEY_ID="; read AWS_ACCESS_KEY_ID
-    printf "AWS_SECRET_ACCESS_KEY="; read AWS_SECRET_ACCESS_KEY
+    printf "AWS_ACCESS_KEY_ID="; read AWS_ACCESS_KEY_ID; echo
+    printf "AWS_SECRET_ACCESS_KEY="; read AWS_SECRET_ACCESS_KEY; echo
     stty echo
 
     echo "export AWS_ACCESS_KEY_ID=\"$AWS_ACCESS_KEY_ID\""         >  ${gcfg.envDir}/10-aws.sh
