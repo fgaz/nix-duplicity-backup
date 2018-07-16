@@ -32,6 +32,8 @@
   };
   #+END_src
 
+* Create the Amazon bucket
+
 * Generating initial directory tree
   Run ~duplicity-gen-keys~ and it will ask for
   your AWS access key ID and AWS secret access key.
