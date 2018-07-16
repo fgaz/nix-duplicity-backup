@@ -38,7 +38,8 @@
   Run ~duplicity-gen-keys~ and it will ask for
   your AWS access key ID and AWS secret access key.
 
-  The generated directories as these contain
+  When backing up and restoring, the machine must have a copy
+  of the the generated directories as these contain
   the AWS keys to connect to the S3 instance, and
   the GPG keys to decrypt the backups
 
