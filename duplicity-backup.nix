@@ -5,9 +5,9 @@ with lib;
 let
   gcfg = config.services.duplicity-backup;
 
-  duplicityGenKeys = pkgs.writeScriptBin "duplicity-gen-keys" ''
-    [ -x ${gcfg.envDir} ] && echo "The environment directory exists." && exit 1
-    [ -x ${gcfg.pgpDir} ] && echo "The PGP home directory exists." && exit 1
+  duplicityGenKeys = pkgs.writeScriptBin "duplicity-gen-keys" (''
+    [ -x ${gcfg.envDir} ] && echo "WARNING: The environment directory(${gcfg.envDir}) exists." && exit 1
+    [ -x ${gcfg.pgpDir} ] && echo "WARNING: The PGP home directory(${gcfg.pgpDir}) exists." && exit 1
 
     umask u=rwx,g=,o=
     mkdir -p ${gcfg.envDir}
@@ -21,7 +21,14 @@ let
 
     echo "export AWS_ACCESS_KEY_ID=\"$AWS_ACCESS_KEY_ID\""         >  ${gcfg.envDir}/10-aws.sh
     echo "export AWS_SECRET_ACCESS_KEY=\"$AWS_SECRET_ACCESS_KEY\"" >> ${gcfg.envDir}/10-aws.sh
-
+  '' + (if gcfg.usePassword
+  then ''
+    stty -echo
+    printf "PASSWORD="; read PASSWORD; echo
+    echo "export PASSWORD=\"$PASSWORD\""         >  ${gcfg.envDir}/20-password.sh
+    stty echo
+  ''
+  else ''
     ${pkgs.expect}/bin/expect << EOF
       set timeout 10
 
@@ -35,29 +42,38 @@ let
 
       interact
     EOF
-  '';
+  ''));
 
   restoreScripts = mapAttrsToList (name: cfg: pkgs.writeScriptBin "duplicity-restore-${name}" ''
-    export PASSPHRASE=""
     for i in ${gcfg.envDir}/*; do
        source $i
     done
 
-    ${pkgs.duplicity}/bin/duplicity \
-      --archive-dir ${gcfg.cachedir} \
-      --name ${name} \
-      --gpg-options "--homedir=${gcfg.pgpDir}" \
-      --encrypt-key "Duplicity Backup" \
-      ${concatStringsSep " " (map (v: "--exclude ${v}") cfg.excludes)} \
-      ${concatStringsSep " " (map (v: "--include ${v}") cfg.includes)} \
-      ${cfg.destination} \
-      ${concatStringsSep " " cfg.directories}
+    ${concatStringsSep "\n" (map (directory: ''
+      ${pkgs.duplicity}/bin/duplicity \
+        --archive-dir ${gcfg.cachedir} \
+        --name ${name}-${directory} \
+        --gpg-options "--homedir=${gcfg.pgpDir}" \
+        --encrypt-key "Duplicity Backup" \
+        ${concatStringsSep " " (map (v: "--exclude ${v}") cfg.excludes)} \
+        ${concatStringsSep " " (map (v: "--include ${v}") cfg.includes)} \
+        ${cfg.destination}-${directory} \
+        ${directory}
+      '') cfg.directories)}
   '') gcfg.archives;
 in
 {
   options = {
     services.duplicity-backup = {
       enable = mkEnableOption "periodic duplicity backups";
+
+      usePassword = mkOption {
+        type = types.bool;
+        default = false;
+        description = ''
+          Use password instead of keys
+        '';
+      };
 
       rootDir = mkOption {
         type = types.string;
@@ -233,8 +249,6 @@ in
         #'';
 
         script = ''
-          export PASSPHRASE=""
-
           for i in ${gcfg.envDir}/*; do
              source $i
           done
@@ -242,15 +256,17 @@ in
           mkdir -p ${gcfg.cachedir}
           chmod 0700 ${gcfg.cachedir}
 
-          ${pkgs.duplicity}/bin/duplicity \
-            --archive-dir ${gcfg.cachedir} \
-            --name ${name} \
-            --gpg-options "--homedir=${gcfg.pgpDir}" \
-            --encrypt-key "Duplicity Backup" \
-            ${concatStringsSep " " (map (v: "--exclude ${v}") cfg.excludes)} \
-            ${concatStringsSep " " (map (v: "--include ${v}") cfg.includes)} \
-            ${concatStringsSep " " cfg.directories} \
-            ${cfg.destination}
+          ${concatStringsSep "\n" (map (directory: ''
+            ${pkgs.duplicity}/bin/duplicity \
+              --archive-dir ${gcfg.cachedir} \
+              --name ${name}-${directory} \
+              --gpg-options "--homedir=${gcfg.pgpDir}" \
+              --encrypt-key "Duplicity Backup" \
+              ${concatStringsSep " " (map (v: "--exclude ${v}") cfg.excludes)} \
+              ${concatStringsSep " " (map (v: "--include ${v}") cfg.includes)} \
+              ${directory} \
+              ${cfg.destination}-${directory}
+            '') cfg.directories)}
         '';
 
         serviceConfig = {
