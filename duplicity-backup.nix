@@ -21,11 +21,11 @@ let
 
     echo "export AWS_ACCESS_KEY_ID=\"$AWS_ACCESS_KEY_ID\""         >  ${gcfg.envDir}/10-aws.sh
     echo "export AWS_SECRET_ACCESS_KEY=\"$AWS_SECRET_ACCESS_KEY\"" >> ${gcfg.envDir}/10-aws.sh
-  '' + (if gcfg.usePassword
+  '' + (if gcfg.usePassphrase
   then ''
     stty -echo
-    printf "PASSWORD="; read PASSWORD; echo
-    echo "export PASSWORD=\"$PASSWORD\""         >  ${gcfg.envDir}/20-password.sh
+    printf "PASSPHRASE="; read PASSPHRASE; echo
+    echo "export PASSPHRASE=\"$PASSPHRASE\""         >  ${gcfg.envDir}/20-passphrase.sh
     stty echo
   ''
   else ''
@@ -54,7 +54,8 @@ let
         --archive-dir ${gcfg.cachedir} \
         --name ${name}-${directory} \
         --gpg-options "--homedir=${gcfg.pgpDir}" \
-        --encrypt-key "Duplicity Backup" \
+      '' + optionalString (!gcfg.usePassphrase) ''--encrypt-key "Duplicity Backup" \'' +
+      ''
         ${concatStringsSep " " (map (v: "--exclude ${v}") cfg.excludes)} \
         ${concatStringsSep " " (map (v: "--include ${v}") cfg.includes)} \
         ${cfg.destination}-${directory} \
@@ -67,11 +68,11 @@ in
     services.duplicity-backup = {
       enable = mkEnableOption "periodic duplicity backups";
 
-      usePassword = mkOption {
+      usePassphrase = mkOption {
         type = types.bool;
         default = false;
         description = ''
-          Use password instead of keys
+          Use passphrase instead of keys
         '';
       };
 
@@ -261,7 +262,8 @@ in
               --archive-dir ${gcfg.cachedir} \
               --name ${name}-${directory} \
               --gpg-options "--homedir=${gcfg.pgpDir}" \
-              --encrypt-key "Duplicity Backup" \
+            '' + optionalString (!gcfg.usePassphrase) ''--encrypt-key "Duplicity Backup" \'' +
+            ''
               ${concatStringsSep " " (map (v: "--exclude ${v}") cfg.excludes)} \
               ${concatStringsSep " " (map (v: "--include ${v}") cfg.includes)} \
               ${directory} \
