@@ -52,13 +52,13 @@ let
     ${concatStringsSep "\n" (map (directory: ''
       ${pkgs.duplicity}/bin/duplicity \
         --archive-dir ${gcfg.cachedir} \
-        --name ${name}-${directory} \
+        --name ${name}-${baseNameOf directory} \
         --gpg-options "--homedir=${gcfg.pgpDir}" \
       '' + optionalString (!gcfg.usePassphrase) ''--encrypt-key "Duplicity Backup" \'' +
       ''
         ${concatStringsSep " " (map (v: "--exclude ${v}") cfg.excludes)} \
         ${concatStringsSep " " (map (v: "--include ${v}") cfg.includes)} \
-        ${cfg.destination}-${directory} \
+        ${cfg.destination}-${baseNameOf directory} \
         ${directory}
       '') cfg.directories)}
   '') gcfg.archives;
@@ -260,14 +260,14 @@ in
           ${concatStringsSep "\n" (map (directory: ''
             ${pkgs.duplicity}/bin/duplicity \
               --archive-dir ${gcfg.cachedir} \
-              --name ${name}-${directory} \
+              --name ${name}-${baseNameOf directory} \
               --gpg-options "--homedir=${gcfg.pgpDir}" \
             '' + optionalString (!gcfg.usePassphrase) ''--encrypt-key "Duplicity Backup" \'' +
             ''
               ${concatStringsSep " " (map (v: "--exclude ${v}") cfg.excludes)} \
               ${concatStringsSep " " (map (v: "--include ${v}") cfg.includes)} \
               ${directory} \
-              ${cfg.destination}-${directory}
+              ${cfg.destination}-${baseNameOf directory}
             '') cfg.directories)}
         '';
 
