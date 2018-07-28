@@ -21,6 +21,9 @@
 
   services.duplicity-backup = {
     enable = true;
+
+    usePassphrase = false; # Set to true to use passphrase
+
     archives = {
       foo = {
         destination = "s3://s3.ap-southeast-1.amazonaws.com/bar/foo";
