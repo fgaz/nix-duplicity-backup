@@ -11,7 +11,7 @@
 
   You can add directories to backup with the ~services.duplicity-backup.archives~ option.
 
-  Currently, ~directories~ seems to only accept one path.
+  ~directories~ has been patched to accept multiple paths, but not fully tested.
 
   Example:
   #+BEGIN_src nix
