@@ -230,6 +230,7 @@ in
   };
 
   config = mkIf gcfg.enable {
+    warnings = lib.optional (length cfg.directories > 1) "Multiple directories is currently beta" ];
     assertions =
       (mapAttrsToList (name: cfg:
         { assertion = cfg.directories != [];
