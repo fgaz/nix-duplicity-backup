@@ -58,7 +58,7 @@ let
       ''
         ${concatStringsSep " " (map (v: "--exclude ${v}") cfg.excludes)} \
         ${concatStringsSep " " (map (v: "--include ${v}") cfg.includes)} \
-        ${cfg.destination}-${baseNameOf directory} \
+        ${cfg.destination}/${baseNameOf directory} \
         ${directory}
       '') cfg.directories)}
   '') gcfg.archives;
@@ -271,7 +271,7 @@ in
               ${concatStringsSep " " (map (v: "--exclude ${v}") cfg.excludes)} \
               ${concatStringsSep " " (map (v: "--include ${v}") cfg.includes)} \
               ${directory} \
-              ${cfg.destination}-${baseNameOf directory}
+              ${cfg.destination}/${baseNameOf directory}
             '') cfg.directories)}
         '';
 
