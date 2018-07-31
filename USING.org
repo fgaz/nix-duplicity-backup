@@ -61,3 +61,17 @@
 * Restoring
   ~sudo duplicity-restore-foo~
   where ~foo~ is the name of the attrset under ~archives~.
+* Recommended system backup for NixOS
+  #+BEGIN_src nix
+  services.duplicity-backup.archives.foo.directories = [
+    "/etc/wpa_supplicant.conf"
+    "/etc/nixos/configuration.nix"
+
+    "/home/user"
+  ];
+  #+END_src
+
+  If you're using mongodb, then ~/var/db/mongodb~ can be added.
+
+  There's no automatic detection for this,
+  but this could be done on a service basis.
