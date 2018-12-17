@@ -1,0 +1,21 @@
+#+TITLE: Restoration LiveCD using NixOS
+#+TITLE: and a duplicity backup
+
+* Background
+** NixOS LiveCD
+   [[https://nixos.wiki/wiki/Creating_a_NixOS_live_CD][LiveCD Documentation]]
+
+   NixOS has a mechanism that allows you to create a NixOS using
+   something akin to configuration.nix on a permanent installation.
+
+** Duplicity
+   Duplicity allows near-realtime backups with compression and
+   timestamping.
+
+* Proposed solution
+  We partition an external drive such that the bootable partition
+  contains a NixOS bootable system and a duplicity backup
+  partition. The system is a configuration that contains the
+  restoration side of the nix-duplicity-backup script and the host
+  system contains the backing up script to back up to the data
+  partition rather than the current S3 backup backend.
