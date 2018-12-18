@@ -1,5 +1,4 @@
-#+TITLE: Restoration LiveCD using NixOS
-#+TITLE: and a duplicity backup
+#+TITLE: Creation of a LiveCD for the restoration of a NixOS system backed up with nix-duplicity-backup
 
 * Background
 ** NixOS LiveCD
