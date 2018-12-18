@@ -2,15 +2,17 @@
 
 * Background
 ** NixOS LiveCD
-   [[https://nixos.wiki/wiki/Creating_a_NixOS_live_CD][LiveCD Documentation]]
-
-   NixOS has a mechanism that allows you to create a NixOS using
-   something akin to configuration.nix on a permanent installation.
+   NixOS provides a module for the creation of a LiveCD through ~config.system.build.isoImage~ [fn:livecd].
+   This creates a fully bootable LiveCD with the full build process, starting with GRUB to NixOS proper.
+   It would probably require a few patches for full disk encryption, alternatively,
+   it should be possible for the partitition alone to be encrypted instead of FDE.
+   Furthermore, automating the encryption process might not be fully containable in Nix [fn:nixsecrets] [fn:nixprivate].
+   Nix relies on reproducibility yet encryption relies on nonces and initialization --
+   a more comprehensive discussion can be found on the Nix Encryption RFC [fn:nixencryption].
 
 ** Duplicity
    Duplicity allows near-realtime backups with compression and
    timestamping.
-
 * Proposed solution
   We partition an external drive such that the bootable partition
   contains a NixOS bootable system and a duplicity backup
@@ -18,3 +20,8 @@
   restoration side of the nix-duplicity-backup script and the host
   system contains the backing up script to back up to the data
   partition rather than the current S3 backup backend.
+
+[fn:livecd] https://nixos.wiki/wiki/Creating_a_NixOS_live_CD
+[fn:nixsecrets] https://github.com/NixOS/nixpkgs/issues/24288
+[fn:nixprivate] https://github.com/NixOS/nix/issues/8
+[fn:nixencryption] https://github.com/edolstra/rfcs/blob/nix-encryption/rfcs/0005-nix-encryption.md
