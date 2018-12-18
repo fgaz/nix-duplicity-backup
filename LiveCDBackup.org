@@ -13,6 +13,19 @@
 ** Duplicity
    Duplicity allows near-realtime backups with compression and
    timestamping.
+
+** nix-duplicity-backup
+   nix-duplicity-backup is a NixOS module initially authored by [[https://github.com/fgaz][fgaz]] and further modified by [[https://github.com/adrianparvino][adrianparvino]].
+   The patches by adrianparvino allows the usage and automation of the creation of
+   (a) GPG keys, or
+   (b) password files,
+   with a common interface.
+   The current architecture of nix-duplicity-backup requires the
+   installation of both restoration and backup scripts;
+   this poses a few problems;
+   (a) without FDE on the disk, mounting the flash drive will expose the identification files, and
+   (b) even with FDE on the disk, having the identication files bundled with the restoration script is somewhat sloppy.
+
 * Proposed solution
   We partition an external drive such that the bootable partition
   contains a NixOS bootable system and a duplicity backup
