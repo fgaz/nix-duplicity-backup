@@ -38,6 +38,10 @@
    (2) it requires no special treatment of individual files.
 
 ** nix-duplicity-backup-system
+   nix-duplicity-backup-system will be a NixOS module which scans for enabled NixOS options.
+   Take, for example, the wpa_supplicant module [fn:postgresql];
+   if it is enabled, then backup the file located at ~services.postgresql.dataDir~.
+
 ** nix-duplicity-backup identification
 ** Solution proper
 
@@ -45,3 +49,5 @@
 [fn:nixsecrets] https://github.com/NixOS/nixpkgs/issues/24288
 [fn:nixprivate] https://github.com/NixOS/nix/issues/8
 [fn:nixencryption] https://github.com/edolstra/rfcs/blob/nix-encryption/rfcs/0005-nix-encryption.md
+
+[fn:postgresql] https://github.com/NixOS/nixpkgs/blob/release-18.09/nixos/modules/services/databases/postgresql.nix
