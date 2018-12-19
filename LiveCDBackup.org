@@ -29,6 +29,14 @@
   overcome the shortcomings of the modules specified in the background.
 
 ** Full Disk Encryption on NixOS LiveCD
+   Full Disk Encryption for the LiveCD is achievable by using LVM instead of squashfs.
+   Alternatively, we can encrypt individual files in the LiveCD using GPG.
+   The GPG approach has the advantage of compatibility with ~<nixpkgs/nixos/modules/installer/cd-dvd/iso-image.nix>~,
+   and the identification files can simply be added with ~isoImage.contents~.
+   However, the LVM approach has the following advantages:
+   (1) as the ~.service~ file is located in ~/nix/store~, file encryption is not recommended, but possible,
+   (2) it requires no special treatment of individual files.
+
 ** nix-duplicity-backup-system
 ** nix-duplicity-backup identification
 ** Solution proper
