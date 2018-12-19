@@ -21,6 +21,8 @@
    this poses a few problems;
    (a) without FDE on the disk, mounting the flash drive will expose the identification files, and
    (b) even with FDE on the disk, having the identication files bundled with the restoration script is somewhat sloppy.
+   nix-duplicity-backup is also currently unsuitable to be used directly for full system backups;
+   it requires users to manually specify the files to back up -- this is error-prone and tedious.
 
 * Proposed solution
   We partition an external drive such that the bootable partition
