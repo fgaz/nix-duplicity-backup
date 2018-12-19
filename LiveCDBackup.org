@@ -10,10 +10,6 @@
    Nix relies on reproducibility yet encryption relies on nonces and initialization --
    a more comprehensive discussion can be found on the Nix Encryption RFC [fn:nixencryption].
 
-** Duplicity
-   Duplicity allows near-realtime backups with compression and
-   timestamping.
-
 ** nix-duplicity-backup
    nix-duplicity-backup is a NixOS module initially authored by [[https://github.com/fgaz][fgaz]] and further modified by [[https://github.com/adrianparvino][adrianparvino]].
    The patches by adrianparvino allows the usage and automation of the creation of
