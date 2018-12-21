@@ -39,7 +39,7 @@
 
 ** nix-duplicity-backup-system
    nix-duplicity-backup-system will be a NixOS module which scans for enabled NixOS options.
-   Take, for example, the wpa_supplicant module [fn:postgresql];
+   Take, for example, the postgresql module [fn:postgresql];
    if it is enabled, then backup the file located at ~services.postgresql.dataDir~.
 
 ** nix-duplicity-backup identification
