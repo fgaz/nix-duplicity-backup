@@ -42,7 +42,24 @@
    Take, for example, the postgresql module [fn:postgresql];
    if it is enabled, then backup the file located at ~services.postgresql.dataDir~.
 
-** nix-duplicity-backup identification
+** Separation of restoration and backup
+   For this subsection, declare/define is used as in C.
+
+   nix-duplicity-backup configuration should be separated into 3 files --
+   (a) ~duplicity-backup-common.nix~
+   (b) ~duplicity-backup-backup.nix~
+   (c) ~duplicity-backup-restore.nix~
+
+   The ~duplicity-backup-common.nix~ declares the common interface between backup and restoration;
+   specifically, the backup directories and the backup destination.
+   Theoretically, this file should not contain any implementation, sans normalization.
+
+   The ~duplicity-backup-backup.nix~ is one definition of the declared common interface;
+   it will define the systemd services and timers for periodically backing up the directories to the directories.
+
+   The ~duplicity-backup-restore.nix~ is another definition of the declared common interface;
+   it will define shell scripts for restoration from backup destinations to their directories.
+
 ** Solution proper
 
 [fn:livecd] https://nixos.wiki/wiki/Creating_a_NixOS_live_CD
