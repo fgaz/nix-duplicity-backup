@@ -59,32 +59,47 @@
 
    The ~duplicity-backup-restore.nix~ is another definition of the declared common interface;
    it will define shell scripts for restoration from backup destinations to their directories.
+   The restoration script should also allow one to change the target root location,
+   as the root file system would contain the LiveCD file system rather than the target's file system.
 
 ** Solution proper
    We define a new NixOS module which
    (a) adds ~nix-duplicity-backup-system~ to the system, and
    (b) creates a LiveCD containing ~duplicity-backup-restore~.
-   The input of ~duplicity-backup-restore~ shall be the
-   from the output of ~nix-duplicity-backup-system~.
+   The output of ~nix-duplicity-backup-system~ shall be passed as
+   the input of ~duplicity-backup-restore~.
 
-   The LiveCD is generated using ~./EncryptedCD~.
-   By adding everything to the LiveCD's ~/nix/store~,
+   The LiveCD is  built and encrypted using ~./EncryptedCD~.
+   Adding everything to the LiveCD's ~/nix/store~,
    and only maintaining symlinks to the system,
-   we remove the need for multiple stages of decryption.
+   allows us to remove the need for multiple stages of decryption.
 
-   The LiveCD will be filled with the following files:
-   (a) The AWS S3 identification files
-   (b) The partition structure --
-       created by ~mount~
-       and ~hardware-configuration.nix~
-   Optionally, it can contain the following files:
-   (a) The duplicity identification files
+   The LiveCD will be populated with the following files:
+   (a) The AWS S3 identity files
+   (b) The partition structure
+
+   Optionally, the LiveCD may also contain the following files:
+   (a) The duplicity GPG keys
+       By placing the duplicity GPG keys,
+       we are able to automate the decryption of the backup.
+   (b) The duplicity backups
+       It is also possible to store the backups directly to the USB drive,
+       allowing it to be restored without internet.
+
+   The partition structure can be generated using heuristics on ~mount~ and ~hardware-configuration.nix~.
 
    The bootup process will be as follows:
 *** Decryption of ~/nix/store~
+    Upon bootup, the LiveCD will prompt the user for a decryption key.
+*** [OPTIONAL] Input of the duplicity GPG key
+    If the GPG identification keys are not saved into ~/nix/store~,
+    the GPG key is prompted using [fn:interactivesystemd].
 *** Rebuilding the partition structure
+    Using the partition structure provided by ~mount~ and ~hardware-configuration.nix~,
+    we are able to mimic the file structure of the original system.
+    Another key is then prompted for the decryption key of the restoration root.
 *** Duplicity restore
-
+    From here-on, everything should be automatically handled by ~duplicity-backup-restore.nix~.
 
 [fn:livecd] https://nixos.wiki/wiki/Creating_a_NixOS_live_CD
 [fn:nixsecrets] https://github.com/NixOS/nixpkgs/issues/24288
