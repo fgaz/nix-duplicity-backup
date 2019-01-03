@@ -91,13 +91,13 @@
    The bootup process will be as follows:
 *** Decryption of ~/nix/store~
     Upon bootup, the LiveCD will prompt the user for a decryption key.
-*** [OPTIONAL] Input of the duplicity GPG key
-    If the GPG identification keys are not saved into ~/nix/store~,
-    the GPG key is prompted using [fn:interactivesystemd].
 *** Rebuilding the partition structure
     Using the partition structure provided by ~mount~ and ~hardware-configuration.nix~,
     we are able to mimic the file structure of the original system.
     Another key is then prompted for the decryption key of the restoration root.
+*** [OPTIONAL] Input of the duplicity GPG key
+    If the GPG identification keys are not saved into ~/nix/store~,
+    the GPG key is prompted using [fn:interactivesystemd].
 *** Duplicity restore
     From here-on, everything should be automatically handled by ~duplicity-backup-restore.nix~.
 
