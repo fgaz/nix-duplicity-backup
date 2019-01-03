@@ -61,6 +61,30 @@
    it will define shell scripts for restoration from backup destinations to their directories.
 
 ** Solution proper
+   We define a new NixOS module which
+   (a) adds ~nix-duplicity-backup-system~ to the system, and
+   (b) creates a LiveCD containing ~duplicity-backup-restore~.
+   The input of ~duplicity-backup-restore~ shall be the
+   from the output of ~nix-duplicity-backup-system~.
+
+   The LiveCD is generated using ~./EncryptedCD~.
+   By adding everything to the LiveCD's ~/nix/store~,
+   and only maintaining symlinks to the system,
+   we remove the need for multiple stages of decryption.
+
+   The LiveCD will be filled with the following files:
+   (a) The AWS S3 identification files
+   (b) The partition structure --
+       created by ~mount~
+       and ~hardware-configuration.nix~
+   Optionally, it can contain the following files:
+   (a) The duplicity identification files
+
+   The bootup process will be as follows:
+*** Decryption of ~/nix/store~
+*** Rebuilding the partition structure
+*** Duplicity restore
+
 
 [fn:livecd] https://nixos.wiki/wiki/Creating_a_NixOS_live_CD
 [fn:nixsecrets] https://github.com/NixOS/nixpkgs/issues/24288
@@ -68,3 +92,6 @@
 [fn:nixencryption] https://github.com/edolstra/rfcs/blob/nix-encryption/rfcs/0005-nix-encryption.md
 
 [fn:postgresql] https://github.com/NixOS/nixpkgs/blob/release-18.09/nixos/modules/services/databases/postgresql.nix
+
+[fn:interactivesystemd] https://alan-mushi.github.io/2014/10/26/execute-an-interactive-script-at-boot-with-systemd.html
+[fn:nixosencryptedroot] https://gist.github.com/martijnvermaat/76f2e24d0239470dd71050358b4d5134
