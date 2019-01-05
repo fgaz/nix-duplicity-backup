@@ -217,6 +217,16 @@ in
   };
 
   config = mkIf gcfg.enable {
+    warnings = concatLists (mapAttrsToList (name: cfg:
+        lib.optional (length cfg.directories > 1) "Multiple directories is currently beta"
+      ) gcfg.archives);
+
+    assertions =
+      (mapAttrsToList (name: cfg:
+        { assertion = cfg.directories != [];
+          message = "Must specify paths for duplicity to back up";
+        }) gcfg.archives);
+
     environment.systemPackages = [ duplicityGenKeys ];
   };
 }
