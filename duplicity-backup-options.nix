@@ -1,0 +1,179 @@
+{ config, lib, ... }:
+with lib;
+let
+  gcfg = config.services.duplicity-backup;
+
+  mkSecurePathsOption =
+    { description
+    , default
+    }:
+    mkOption {
+      inherit description default;
+
+      type = with types; listOf (either path string);
+      apply = xs: map (x: if builtins.typeOf x == "path" then toString x else x) xs;
+    };
+
+  mkSecurePathOption =
+    { description
+    , default
+    }:
+    mkOption {
+      inherit description default;
+
+      type = with types; either path string;
+      apply = x: if builtins.typeOf x == "path" then toString x else x;
+    };
+in
+{
+  options = {
+    services.duplicity-backup = {
+      enable = mkEnableOption "periodic duplicity backups";
+
+      usePassphrase = mkOption {
+        type = types.bool;
+        default = false;
+        description = ''
+          Use passphrase instead of keys
+        '';
+      };
+
+      rootDir = mkSecurePathOption {
+        default = /var/keys/duplicity;
+        description = ''
+          Directory of bash scripts to `source`,
+          currently used for declaring AWS keys and secrets
+        '';
+      };
+
+      envDir = mkSecurePathOption {
+        default = gcfg.rootDir + "/env";
+        description = ''
+          Directory of bash scripts to `source`,
+          currently used for declaring AWS keys and secrets
+        '';
+      };
+
+      pgpDir = mkSecurePathOption {
+        default = gcfg.rootDir + "/gnupg";
+        description = ''
+          Directory of bash scripts to `source`,
+          currently used for declaring AWS keys and secrets
+        '';
+      };
+
+      cachedir = mkSecurePathOption {
+        default = /var/cache/duplicity;
+        description = ''
+          The cache allows duplicity to identify previously stored data
+          blocks, reducing archival time and bandwidth usage.
+        '';
+      };
+
+      archives = mkOption {
+        type = types.attrsOf (types.submodule ({ ... }:
+          {
+            options = {
+              destination = mkOption {
+                type = types.string;
+                default = "";
+                example = "rsync://user@example.com:/home/user";
+                description = ''
+                '';
+              };
+
+              period = mkOption {
+                type = types.str;
+                default = "01:15";
+                example = "hourly";
+                description = ''
+                  Create archive at this interval.
+
+                  The format is described in
+                  <citerefentry><refentrytitle>systemd.time</refentrytitle>
+                  <manvolnum>7</manvolnum></citerefentry>.
+                '';
+              };
+
+              directories = mkSecurePathsOption {
+                default = [];
+                description = "List of filesystem paths to archive.";
+              };
+
+              excludes = mkSecurePathsOption {
+                default = [];
+                description = ''
+                  Exclude files and directories matching these patterns.
+                '';
+              };
+
+              includes = mkSecurePathsOption {
+                default = [];
+                description = ''
+                  Include only files and directories matching these
+                  patterns (the empty list includes everything).
+
+                  Exclusions have precedence over inclusions.
+                '';
+              };
+
+              maxbw = mkOption {
+                type = types.nullOr types.int;
+                default = null;
+                description = ''
+                  Abort archival if upstream bandwidth usage in bytes
+                  exceeds this threshold.
+                '';
+              };
+
+              maxbwRateUp = mkOption {
+                type = types.nullOr types.int;
+                default = null;
+                example = literalExample "25 * 1000";
+                description = ''
+                  Upload bandwidth rate limit in bytes.
+                '';
+              };
+
+              maxbwRateDown = mkOption {
+                type = types.nullOr types.int;
+                default = null;
+                example = literalExample "50 * 1000";
+                description = ''
+                  Download bandwidth rate limit in bytes.
+                '';
+              };
+            };
+          }
+        ));
+
+        default = {};
+
+        example = literalExample ''
+          {
+            nixos =
+              { directories = [ "/home" "/root/ssl" ];
+              };
+
+            gamedata =
+              { directories = [ "/var/lib/virtualMail" ];
+                period      = "*:30";
+              };
+          }
+        '';
+
+        description = ''
+          Duplicity backup configurations. Each attribute names a backup
+          to be created at a given time interval, according to the options
+          associated with it.
+
+          For each member of the set is created a timer which triggers the
+          instanced <literal>duplicity-backup-name</literal> service unit. You may use
+          <command>systemctl start duplicity-backup-name</command> to
+          manually trigger creation of <literal>backup-name</literal> at
+          any time.
+        '';
+      };
+    };
+  };
+}
