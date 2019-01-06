@@ -4,8 +4,35 @@ with lib;
 
 let
   gcfg = config.services.duplicity-backup;
+
+  mkSecurePathOption =
+    { description
+    , default
+    }:
+    mkOption {
+      inherit description default;
+
+      type = with types; either path string;
+      apply = x: if builtins.typeOf x == "path" then toString x else x;
+    };
 in
 {
+  options = {
+    services.duplicity-backup.archives = mkOption {
+      type = types.attrsOf (types.submodule ({ ... }:
+        {
+          options.root = mkSecurePathOption {
+            description = ''
+              The restoration root directory,
+              useful for restoring a root directory to /mnt
+            '';
+            default = "";
+          };
+        }
+      ));
+    };
+  };
+
   config = mkIf gcfg.enable {
     environment.systemPackages = mapAttrsToList (name: cfg: pkgs.writeScriptBin "duplicity-restore-${name}" ''
     for i in ${gcfg.envDir}/*; do
@@ -13,6 +40,8 @@ in
     done
 
     ${concatStringsSep "\n" (map (directory: ''
+      mkdir -p ${cfg.root + dirOf directory}
+
       ${pkgs.duplicity}/bin/duplicity \
         --archive-dir ${gcfg.cachedir} \
         --name ${name}-${baseNameOf directory} \
@@ -22,7 +51,7 @@ in
         ${concatStringsSep " " (map (v: "--exclude ${v}") cfg.excludes)} \
         ${concatStringsSep " " (map (v: "--include ${v}") cfg.includes)} \
         ${cfg.destination}/${baseNameOf directory} \
-        ${directory}
+        ${cfg.root + directory}
       '') cfg.directories)}
   '') gcfg.archives;
   };
