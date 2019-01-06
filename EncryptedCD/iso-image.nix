@@ -508,7 +508,6 @@ in
       cryptsetup luksOpen /mnt-root/iso/nix-store.squashfs.luks squashfs
       mountFS /dev/mapper/squashfs /nix/.ro-store "" squashfs
       mountFS unionfs /nix/store "allow_other,cow,nonempty,chroot=/mnt-root,max_files=32768,hide_meta_files,dirs=/nix/.rw-store=rw:/nix/.ro-store=ro" unionfs-fuse
-      sh
     '';
 
     # Note that /dev/root is a symlink to the actual root device
