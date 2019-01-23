@@ -17,6 +17,8 @@ let
     };
 in
 {
+  imports = [ ./duplicity-backup-common.nix ];
+
   options = {
     services.duplicity-backup.archives = mkOption {
       type = types.attrsOf (types.submodule ({ ... }:

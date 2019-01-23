@@ -6,6 +6,8 @@ let
   gcfg = config.services.duplicity-backup;
 in
 {
+  imports = [ ./duplicity-backup-common.nix ];
+
   config = mkIf gcfg.enable {
     systemd.services =
       mapAttrs' (name: cfg: nameValuePair "duplicity-${name}" {
