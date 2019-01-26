@@ -23,10 +23,10 @@ in
     services.duplicity-backup.archives = mkOption {
       type = types.attrsOf (types.submodule ({ ... }:
         {
-          options.root = mkSecurePathOption {
+          options.target = mkSecurePathOption {
             description = ''
-              The restoration root directory,
-              useful for restoring a root directory to /mnt
+              The restoration target directory,
+              useful for restoring a target directory to /mnt
             '';
             default = "";
           };
@@ -42,7 +42,7 @@ in
     done
 
     ${concatStringsSep "\n" (map (directory: ''
-      mkdir -p ${cfg.root + dirOf directory}
+      mkdir -p ${cfg.target + dirOf directory}
 
       ${pkgs.duplicity}/bin/duplicity \
         --archive-dir ${gcfg.cachedir} \
@@ -53,7 +53,7 @@ in
         ${concatStringsSep " " (map (v: "--exclude ${v}") cfg.excludes)} \
         ${concatStringsSep " " (map (v: "--include ${v}") cfg.includes)} \
         ${cfg.destination}/${baseNameOf directory} \
-        ${cfg.root + directory}
+        ${cfg.target + directory}
       '') cfg.directories)}
   '') gcfg.archives;
   };
