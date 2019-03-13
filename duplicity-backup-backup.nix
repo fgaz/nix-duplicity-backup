@@ -35,6 +35,7 @@ in
               --archive-dir ${gcfg.cachedir} \
               --name ${name}-${baseNameOf directory} \
               --gpg-options "--homedir=${gcfg.pgpDir}" \
+              --full-if-older-than 1M \
             '' + optionalString (!gcfg.usePassphrase) ''--encrypt-key "Duplicity Backup" \'' +
             ''
               ${concatStringsSep " " (map (v: "--exclude ${v}") cfg.excludes)} \
