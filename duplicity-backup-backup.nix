@@ -8,7 +8,11 @@ in
 {
   imports = [ ./duplicity-backup-common.nix ];
 
-  config = mkIf gcfg.enable {
+  options = {
+    services.duplicity-backup.enableBackup = mkEnableOption "periodic duplicity backups backup tools";
+  };
+
+  config = mkIf (gcfg.enable && gcfg.enableBackup) {
     systemd.services =
       mapAttrs' (name: cfg: nameValuePair "duplicity-${name}" {
         description = "Duplicity archive '${name}'";
