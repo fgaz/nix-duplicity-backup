@@ -31,12 +31,12 @@ in
              source $i
           done
 
-          mkdir -p ${gcfg.cachedir}
-          chmod 0700 ${gcfg.cachedir}
+          mkdir -p ${gcfg.cacheDir}
+          chmod 0700 ${gcfg.cacheDir}
 
           ${concatStringsSep "\n" (map (directory: ''
             ${pkgs.duplicity}/bin/duplicity \
-              --archive-dir ${gcfg.cachedir} \
+              --archive-dir ${gcfg.cacheDir} \
               --name ${name}-${baseNameOf directory} \
               --gpg-options "--homedir=${gcfg.pgpDir}" \
               --full-if-older-than 1M \

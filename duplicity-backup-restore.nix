@@ -57,7 +57,7 @@ in
               mkdir -p ${config.target + dirOf directory}
 
               ${pkgs.duplicity}/bin/duplicity \
-                --archive-dir ${gcfg.cachedir} \
+                --archive-dir ${gcfg.cacheDir} \
                 --name ${name}-${baseNameOf directory} \
                 --gpg-options "--homedir=${gcfg.pgpDir}" \
               '' + optionalString (!gcfg.usePassphrase) ''--encrypt-key "Duplicity Backup" \'' +

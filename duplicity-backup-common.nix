@@ -101,7 +101,7 @@ in
         '';
       };
 
-      cachedir = mkSecurePathOption {
+      cacheDir = mkSecurePathOption {
         default = /var/cache/duplicity;
         description = ''
           The cache allows duplicity to identify previously stored data
