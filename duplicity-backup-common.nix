@@ -139,6 +139,11 @@ in
                 description = "List of filesystem paths to archive.";
               };
 
+              allowSourceMismatch = mkOption {
+                type = types.bool;
+                default = false;
+              };
+
               excludes = mkSecurePathsOption {
                 default = [];
                 description = ''
@@ -221,11 +226,17 @@ in
         lib.optional (length cfg.directories > 1) "Multiple directories is currently beta"
       ) gcfg.archives);
 
-    assertions =
-      (mapAttrsToList (name: cfg:
-        { assertion = cfg.directories != [];
-          message = "Must specify paths for duplicity to back up";
-        }) gcfg.archives);
+    assertions = concatLists (mapAttrsToList (name: cfg:
+      let
+        protocols = [ "s3" "sftp" ];
+      in
+      [{ assertion = cfg.directories != [];
+         message = "Must specify paths for duplicity to back up";
+       }
+       { assertion = any (protocol: hasPrefix (protocol + "://") cfg.destination) protocols;
+         message = "Currently supported protocols are: " + concatStringsSep " " protocols;
+       }
+      ]) gcfg.archives);
 
     environment.systemPackages = [ duplicityGenKeys ];
   };
