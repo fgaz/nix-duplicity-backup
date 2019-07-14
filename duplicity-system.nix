@@ -13,7 +13,7 @@ let
     inherit (config.services.duplicity-backup.archives.system) directories;
   in lib.unique
     (lib.filter (file: !(lib.any (pfx: lib.hasPrefix (toString pfx) file) ([ <nixpkgs/lib/modules.nix> <nixpkgs/nixos> ] ++ directories) ||
-                         lib.any (sfx: lib.hasSuffix (toString sfx) file) ["system-specific.nix" "hardware-configuration.nix"]))
+                         lib.any (sfx: lib.hasSuffix (toString sfx) file) [ "<unknown-file>" "system-specific.nix" "hardware-configuration.nix" ]))
       (builtins.map (x: toString x.file) options._definedNames));
 in
 {
