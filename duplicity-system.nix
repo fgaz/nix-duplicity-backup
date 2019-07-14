@@ -20,9 +20,15 @@ in
   imports = [ ./duplicity-backup.nix ];
 
   options.services.duplicity-system = {
+    restorationImage = lib.mkOption {
+      type = with types; bool;
+      default = false;
+    };
+
     destination = lib.mkOption {
       type = with types; string;
     };
+
     extraFiles = lib.mkOption {
       type = with types; listOf path;
     };
@@ -30,7 +36,7 @@ in
 
   config = {
     assertions =
-      [ { assertion = missing_imports == [];
+      [ { assertion = !cfg.restorationImage -> missing_imports == [];
           message = "Missing imports in system archive: ${toString missing_imports}";
         }
       ];
