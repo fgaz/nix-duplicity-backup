@@ -1,1 +1,39 @@
 #+TITLE: nix-duplicity-backup
+* Prerequisites and installation
+
+  The canonical installation of nix-duplicity-backup is S3+Password.
+  An alternative to S3 is rsync/SSH, however this is currently disabled.
+  An alternative to Password login is the usage of GPG keys.
+  Any S3 bucket will work provided that ACL permissions are granted to your user.
+
+* Canonical Configuration
+
+  As an example, nix-duplicity-backup, the repository will be backed up.
+  An S3+Password configuration is used by default.
+  First, create a ~duplicity-backup-config.nix~:
+#+BEGIN_src nix
+  # This serves as a configuration file, no backups will be created,
+  # and this is a noop, sans assertions checking.
+  {
+    # This loads the common headers, the backup and restore script, yet disabled.
+    imports = [ <nix-duplicity-backup/duplicity-backup.nix> ];
+
+    services.duplicity-backup = {
+      enable = true;
+
+      # Use passphrase instead of GPG keys
+      usePassphrase = true;
+
+      # Add an archive to duplicity-backup
+      archives.nix-duplicity-backup = {
+        destination = s3://s3.REGION.amazonaws.com/BUCKETNAME/nix-duplicity-backup;
+
+        # A list of files and directories to backup
+        directories = [
+          <nix-duplicity-backup>
+        ];
+      };
+    };
+  }
+#+END_src
+
