@@ -10,10 +10,10 @@
 
   As an example, nix-duplicity-backup, the repository will be backed up.
   An S3+Password configuration is used by default.
-  First, create a ~duplicity-backup-config.nix~:
+  First, create a ~duplicity-backup-config.nix~ beside ~configuration.nix~:
 #+BEGIN_src nix
   # This serves as a configuration file, no backups will be created,
-  # and this is a noop, sans assertions checking.
+  # and this is a noop, sans assertions checking and duplicity key generation.
   {
     # This loads the common headers, the backup and restore script, yet disabled.
     imports = [ <nix-duplicity-backup/duplicity-backup.nix> ];
@@ -59,3 +59,17 @@
 #+BEGIN_src bash
   export PGP_HOME_DIR=${gcfg.pgpDir}
 #+END_src bash
+
+* Enabling backups
+
+  Backups can finally be enabled by adding the following to your ~configuration.nix~:
+#+BEGIN_src nix
+  {
+    imports = [ ./duplicit-backup-config.nix ];
+
+    # Add the backup services and timer to the configuration
+    services.duplicity-backup.enableBackup = true;
+  }
+#+END_src
+
+ To verify that everything works, run ~systemctl start duplicity-nix-duplicity-backup~.
