@@ -37,3 +37,25 @@
   }
 #+END_src
 
+* Credentials management
+
+  With an S3 backend, ~duplicity-gen-keys~ will ask for 
+  AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY.
+  These can be found under ~$HOME/.aws/credentials~.
+  These are statefully stored under ~${envDir}/10-aws.sh~
+
+  With passphrase enabled, it will prompt for a passphrase,
+  and store it under ~${envDir}/20-passphrase.sh~.
+
+  These are stored as Bash files, allowing you to load it imperatively using:
+#+BEGIN_src bash
+  for i in ${envDir}/*; do
+    . $i
+  done
+#+END_src
+
+  With GPG enabled, the GPG keys are stored in ${pgpDir},
+  and can be loaded using
+#+BEGIN_src bash
+  export PGP_HOME_DIR=${gcfg.pgpDir}
+#+END_src bash
