@@ -49,10 +49,10 @@
   then these can be found under ~$HOME/.aws/credentials~.
   Otherwise, you need to check under
   IAM > Users > [your user] > Security Credentials
-  and create an access key.
+  on the Amazon AWS console
   Access key secrets are only shown upon creation,
   so if you don't have an existing secret,
-  you'll have to generate na new access key ID.
+  you'll have to generate a new access key ID.
   These are statefully stored under ~${envDir}/10-aws.sh~
 
   With passphrase enabled, it will prompt for a passphrase,
