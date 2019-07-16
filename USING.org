@@ -61,10 +61,11 @@
   done
 #+END_src
 
-  With GPG enabled, the GPG keys are stored in ${pgpDir},
-  and can be loaded using
+  With GPG enabled, ~duplicity-gen-keys~ will generate GPG keys
+  and store it under in ~${pgpDir}~.
+  These can be loaded into your environment using
 #+BEGIN_src bash
-  export PGP_HOME_DIR=${gcfg.pgpDir}
+  export PGP_HOME_DIR=${pgpDir}
 #+END_src bash
 
 * Enabling backups
