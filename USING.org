@@ -39,9 +39,16 @@
 
 * Credentials management
 
-  With an S3 backend, ~duplicity-gen-keys~ will ask for 
-  AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY.
-  These can be found under ~$HOME/.aws/credentials~.
+  With an S3 backend, ~duplicity-gen-keys~ will ask for
+  ~AWS_ACCESS_KEY_ID~ and ~AWS_SECRET_ACCESS_KEY~.
+  If you have previously used the AWS CLI,
+  then these can be found under ~$HOME/.aws/credentials~.
+  Otherwise, you need to check under
+  IAM > Users > [your user] > Security Credentials
+  and create an access key.
+  Access key secrets are only shown upon creation,
+  so if you don't have an existing secret,
+  you'll have to generate na new access key ID.
   These are statefully stored under ~${envDir}/10-aws.sh~
 
   With passphrase enabled, it will prompt for a passphrase,
