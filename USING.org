@@ -85,3 +85,30 @@
 #+END_src
 
  To verify that everything works, run ~systemctl start duplicity-nix-duplicity-backup~.
+
+* Configuration
+
+  More granular configurations are possible:
+#+BEGIN_src nix
+  {
+    services.duplicity-backup = {
+      archives.nix-duplicity-backup = {
+        # Use GPG keys instead of passphrase login
+        usePassphrase = false;
+
+        archives.nix-duplicity-backup = {
+          # Defaults to "01:15"
+          # This makes the backups run hourly instead of 01:05 localtime.
+          # More info in `man 7 systemd.time`, section CALENDAR EVENTS.
+          period = "hourly";
+
+          # Exclude files containing the name "secret" from being uploaded.
+          excludes = [ "*secret*" ];
+
+          # Only use a maximum bandwidth of 1 MB/s.
+          maxbw = 1 * 1000 * 1000;
+        };
+      };
+    };
+  }
+#+END_src
