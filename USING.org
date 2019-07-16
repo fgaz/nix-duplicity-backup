@@ -39,6 +39,10 @@
 
 * Credentials management
 
+  Under default configurations,
+  ~${envDir}~ is located in ~/var/keys/duplicity/env~,
+  ~${pgpDir}~ is located in ~/var/keys/duplicity/gnupg~.
+
   With an S3 backend, ~duplicity-gen-keys~ will ask for
   ~AWS_ACCESS_KEY_ID~ and ~AWS_SECRET_ACCESS_KEY~.
   If you have previously used the AWS CLI,
