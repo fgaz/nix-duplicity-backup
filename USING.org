@@ -96,7 +96,7 @@
 
         archives.nix-duplicity-backup = {
           # Defaults to "01:15"
-          # This makes the backups run hourly instead of 01:05 localtime.
+          # This makes the backups run hourly instead of 01:15 localtime.
           # More info in `man 7 systemd.time`, section CALENDAR EVENTS.
           period = "hourly";
 
