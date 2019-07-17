@@ -55,14 +55,16 @@ let
 
   mkSecurePathOption =
     { description
-    , default
-    }:
-    mkOption {
-      inherit description default;
+    , ...
+    }@args:
+    mkOption ({
+      inherit description;
 
       type = with types; either path string;
       apply = x: if builtins.typeOf x == "path" then toString x else x;
-    };
+    } // lib.optionalAttrs (args ? default) {
+      inherit (args) default;
+    });
 in
 {
   options = {
@@ -134,9 +136,8 @@ in
                 '';
               };
 
-              directories = mkSecurePathsOption {
-                default = [];
-                description = "List of filesystem paths to archive.";
+              directory = mkSecurePathOption {
+                description = "File system path to archive.";
               };
 
               allowSourceMismatch = mkOption {
@@ -196,12 +197,12 @@ in
         example = literalExample ''
           {
             nixos =
-              { directories = [ "/home" "/root/ssl" ];
+              { directory = /home;
               };
 
             gamedata =
-              { directories = [ "/var/lib/virtualMail" ];
-                period      = "*:30";
+              { directory = /var/lib/virtualMail;
+                period    = "*:30";
               };
           }
         '';
@@ -222,18 +223,11 @@ in
   };
 
   config = mkIf gcfg.enable {
-    warnings = concatLists (mapAttrsToList (name: cfg:
-        lib.optional (length cfg.directories > 1) "Multiple directories is currently beta"
-      ) gcfg.archives);
-
     assertions = concatLists (mapAttrsToList (name: cfg:
       let
         protocols = [ "s3" "sftp" ];
       in
-      [{ assertion = cfg.directories != [];
-         message = "Must specify paths for duplicity to back up";
-       }
-       { assertion = any (protocol: hasPrefix (protocol + "://") cfg.destination) protocols;
+      [{ assertion = any (protocol: hasPrefix (protocol + "://") cfg.destination) protocols;
          message = "Currently supported protocols are: " + concatStringsSep " " protocols;
        }
       ]) gcfg.archives);

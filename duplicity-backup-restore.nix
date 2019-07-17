@@ -57,16 +57,14 @@ in
               mkdir -p ${config.target + dirOf directory}
 
               ${pkgs.duplicity}/bin/duplicity \
+                --force \
                 --archive-dir ${gcfg.cacheDir} \
-                --name ${name}-${baseNameOf directory} \
+                --name ${name} \
                 --gpg-options "--homedir=${gcfg.pgpDir}" \
-              '' + optionalString (!gcfg.usePassphrase) ''--encrypt-key "Duplicity Backup" \'' +
-              ''
-                ${concatStringsSep " " (map (v: "--exclude ${v}") config.excludes)} \
-                ${concatStringsSep " " (map (v: "--include ${v}") config.includes)} \
-                ${config.destination}/${baseNameOf directory} \
+            '' + optionalString (!gcfg.usePassphrase) ''--encrypt-key "Duplicity Backup" \'' + ''
+                ${config.destination} \
                 ${config.target + directory}
-              '') config.directories)}
+            '') [ config.directory ])}
           '';
         }
       ));
