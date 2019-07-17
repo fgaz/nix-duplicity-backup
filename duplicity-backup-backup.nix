@@ -44,7 +44,7 @@ in
               --archive-dir ${gcfg.cacheDir} \
               --name ${name} \
               --gpg-options "--homedir=${gcfg.pgpDir}" \
-              --full-if-older-than 1M \
+              --full-if-older-than ${config.fullIfOlderThan} \
           '' + optionalString (config.allowSourceMismatch) ''--allow-source-mismatch \
           '' + optionalString (!gcfg.usePassphrase) ''--encrypt-key "Duplicity Backup" \
           '' + ''

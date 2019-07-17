@@ -123,6 +123,19 @@ in
                 '';
               };
 
+              fullIfOlderThan = mkOption {
+                type = types.str;
+                default = "1M";
+                example = "1D";
+                description = ''
+                  Use full backup when fullIfOlderThan time has passed.
+
+                  The format is described in
+                  <citerefentry><refentrytitle>duplicity</refentrytitle>
+                  <manvolnum>1</manvolnum></citerefentry>.
+                '';
+              };
+
               period = mkOption {
                 type = types.str;
                 default = "01:15";
