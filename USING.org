@@ -111,6 +111,12 @@
 
           # Only use a maximum bandwidth of 1 MB/s.
           maxbw = 1 * 1000 * 1000;
+
+          # Use a full backup every week instead of every month.
+          fullIfOlderThan = "7D";
+
+          # And only keep 2 weeks worth of full backups
+          removeAllButNFull = 2;
         };
       };
     };
