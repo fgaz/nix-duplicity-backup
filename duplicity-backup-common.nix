@@ -123,6 +123,17 @@ in
                 '';
               };
 
+              removeAllButNFull = mkOption {
+                type = types.nullOr types.int;
+                default = null;
+                example = 2;
+                description = ''
+                  Only keep the given amount of full backups,
+                  useful for pruning old full backups
+                  which are too outdated to be useful.
+                '';
+              };
+
               fullIfOlderThan = mkOption {
                 type = types.str;
                 default = "1M";

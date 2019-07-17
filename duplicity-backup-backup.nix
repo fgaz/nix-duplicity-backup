@@ -52,6 +52,14 @@ in
               ${concatStringsSep " " (map (v: "--exclude '${v}'") config.excludes)} \
               ${config.directory} \
               ${config.destination}
+          '' + optionalString (config.removeAllButNFull != null) ''
+            ${pkgs.duplicity}/bin/duplicity remove-all-but-n-full ${toString config.removeAllButNFull} \
+              --archive-dir ${gcfg.cacheDir} \
+              --name ${name} \
+              --gpg-options "--homedir=${gcfg.pgpDir}" \
+              --full-if-older-than ${config.fullIfOlderThan} \
+              --force \
+              ${config.destination}
           '';
         };
       }));
