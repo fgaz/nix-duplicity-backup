@@ -28,10 +28,8 @@
       archives.nix-duplicity-backup = {
         destination = s3://s3.REGION.amazonaws.com/BUCKETNAME/nix-duplicity-backup;
 
-        # A list of files and directories to backup
-        directories = [
-          <nix-duplicity-backup>
-        ];
+        # A directory or file to back up
+        directory = <nix-duplicity-backup>;
       };
     };
   }
@@ -77,7 +75,7 @@
   Backups can finally be enabled by adding the following to your ~configuration.nix~:
 #+BEGIN_src nix
   {
-    imports = [ ./duplicit-backup-config.nix ];
+    imports = [ ./duplicity-backup-config.nix ];
 
     # Add the backup services and timer to the configuration
     services.duplicity-backup.enableBackup = true;
@@ -104,6 +102,9 @@
 
           # Exclude files containing the name "secret" from being uploaded.
           excludes = [ "*secret*" ];
+
+          # However, allow files containing the name "code_to_handle_secret" to be uploaded.
+          includes = [ "*code_to_handle_secret*" ];
 
           # Only use a maximum bandwidth of 1 MB/s.
           maxbw = 1 * 1000 * 1000;
