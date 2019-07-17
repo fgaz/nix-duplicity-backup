@@ -15,10 +15,12 @@
   # This serves as a configuration file, no backups will be created,
   # and this is a noop, sans assertions checking and duplicity key generation.
   {
-    # This loads the common headers, the backup and restore script, yet disabled.
+    # This loads the services.duplicity-backup options.
     imports = [ <nix-duplicity-backup/duplicity-backup.nix> ];
 
     services.duplicity-backup = {
+      # This enabled interpretation of the duplicity-backup config,
+      # specifically assertions checking and duplicity-gen-keys.
       enable = true;
 
       # Use passphrase instead of GPG keys
@@ -26,6 +28,7 @@
 
       # Add an archive to duplicity-backup
       archives.nix-duplicity-backup = {
+        # The S3(or SSH) instance to upload the backups to
         destination = s3://s3.REGION.amazonaws.com/BUCKETNAME/nix-duplicity-backup;
 
         # A directory or file to back up
@@ -47,7 +50,7 @@
   then these can be found under ~$HOME/.aws/credentials~.
   Otherwise, you need to check under
   IAM > Users > [your user] > Security Credentials
-  on the Amazon AWS console
+  on the Amazon AWS console.
   Access key secrets are only shown upon creation,
   so if you don't have an existing secret,
   you'll have to generate a new access key ID.
@@ -77,7 +80,7 @@
   {
     imports = [ ./duplicity-backup-config.nix ];
 
-    # Add the backup services and timer to the configuration
+    # Adds the backup services and timers to systemd for periodic backups.
     services.duplicity-backup.enableBackup = true;
   }
 #+END_src
