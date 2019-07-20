@@ -14,6 +14,16 @@ let
       printf 'export %s="%s"\n' "''${VAR}" "''${!VAR}" >> $FILE
     }
 
+    prompt() {
+      VAR="$1"
+
+      [ "$2" = "SECRET" ] && stty -echo
+      printf '%s=' "$VAR"
+      IFS= read "$VAR"
+      [ "$2" = "SECRET" ] && stty echo
+      [ "$2" = "SECRET" ] && printf '\n'
+    }
+
     [ -x ${gcfg.envDir} ] && echo "WARNING: The environment directory(${gcfg.envDir}) exists." && exit 1
     [ -x ${gcfg.pgpDir} ] && echo "WARNING: The PGP home directory(${gcfg.pgpDir}) exists." && exit 1
 
@@ -28,19 +38,14 @@ let
     mkdir -p ${gcfg.pgpDir}
     umask 0022
 
-    printf "AWS_ACCESS_KEY_ID="; read AWS_ACCESS_KEY_ID
-
-    stty -echo
-    printf "AWS_SECRET_ACCESS_KEY="; read AWS_SECRET_ACCESS_KEY; echo
-    stty echo
+    prompt AWS_ACCESS_KEY_ID
+    prompt AWS_SECRET_ACCESS_KEY SECRET
 
     writeVar AWS_ACCESS_KEY_ID     ${gcfg.envDir}/10-aws.sh
     writeVar AWS_SECRET_ACCESS_KEY ${gcfg.envDir}/10-aws.sh
   '' + (if gcfg.usePassphrase
   then ''
-    stty -echo
-    printf "PASSPHRASE="; read PASSPHRASE; echo
-    stty echo
+    prompt PASSPHRASE SECRET
     writeVar PASSPHRASE ${gcfg.envDir}/20-passphrase.sh
   ''
   else ''
