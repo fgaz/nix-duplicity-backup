@@ -4,6 +4,8 @@ let
   gcfg = config.services.duplicity-backup;
 
   duplicityGenKeys = pkgs.writeScriptBin "duplicity-gen-keys" (''
+    #!${pkgs.stdenv.shell}
+
     writeVar() {
       VAR="$1"
       FILE="$2"
