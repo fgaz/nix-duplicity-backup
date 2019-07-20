@@ -17,6 +17,12 @@ let
     [ -x ${gcfg.envDir} ] && echo "WARNING: The environment directory(${gcfg.envDir}) exists." && exit 1
     [ -x ${gcfg.pgpDir} ] && echo "WARNING: The PGP home directory(${gcfg.pgpDir}) exists." && exit 1
 
+    cleanup () {
+      rm -fr ${gcfg.envDir}
+      rm -fr ${gcfg.pgpDir}
+    }
+    trap cleanup EXIT
+
     umask u=rwx,g=,o=
     mkdir -p ${gcfg.envDir}
     mkdir -p ${gcfg.pgpDir}
@@ -51,7 +57,10 @@ let
 
       interact
     EOF
-  ''));
+  '') + ''
+      trap EXIT
+   ''
+);
 
   mkSecurePathsOption =
     { description
