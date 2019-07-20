@@ -4,6 +4,14 @@ let
   gcfg = config.services.duplicity-backup;
 
   duplicityGenKeys = pkgs.writeScriptBin "duplicity-gen-keys" (''
+    writeVar() {
+      VAR="$1"
+      FILE="$2"
+
+      touch "$FILE"
+      printf 'export %s="%s"\n' "''${VAR}" "''${!VAR}" >> $FILE
+    }
+
     [ -x ${gcfg.envDir} ] && echo "WARNING: The environment directory(${gcfg.envDir}) exists." && exit 1
     [ -x ${gcfg.pgpDir} ] && echo "WARNING: The PGP home directory(${gcfg.pgpDir}) exists." && exit 1
 
@@ -17,13 +25,13 @@ let
     printf "AWS_SECRET_ACCESS_KEY="; read AWS_SECRET_ACCESS_KEY; echo
     stty echo
 
-    echo "export AWS_ACCESS_KEY_ID=\"$AWS_ACCESS_KEY_ID\""         >  ${gcfg.envDir}/10-aws.sh
-    echo "export AWS_SECRET_ACCESS_KEY=\"$AWS_SECRET_ACCESS_KEY\"" >> ${gcfg.envDir}/10-aws.sh
+    writeVar AWS_ACCESS_KEY_ID     ${gcfg.envDir}/10-aws.sh
+    writeVar AWS_SECRET_ACCESS_KEY ${gcfg.envDir}/10-aws.sh
   '' + (if gcfg.usePassphrase
   then ''
     stty -echo
     printf "PASSPHRASE="; read PASSPHRASE; echo
-    echo "export PASSPHRASE=\"$PASSPHRASE\""         >  ${gcfg.envDir}/20-passphrase.sh
+    writeVar PASSPHRASE ${gcfg.envDir}/20-passphrase.sh
     stty echo
   ''
   else ''
