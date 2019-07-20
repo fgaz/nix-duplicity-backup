@@ -24,35 +24,35 @@ let
       [ "$2" = "SECRET" ] && printf '\n'
     }
 
-    [ -x ${gcfg.envDir} ] && echo "WARNING: The environment directory(${gcfg.envDir}) exists." && exit 1
-    [ -x ${gcfg.pgpDir} ] && echo "WARNING: The PGP home directory(${gcfg.pgpDir}) exists." && exit 1
+    [ -e ${escapeShellArg gcfg.envDir} ] && printf "WARNING: The environment directory(%s) exists." ${escapeShellArg gcfg.envDir} && exit 1
+    [ -e ${escapeShellArg gcfg.pgpDir} ] && printf "WARNING: The PGP home directory(%s) exists."    ${escapeShellArg gcfg.pgpDir} && exit 1
 
     cleanup () {
-      rm -fr ${gcfg.envDir}
-      rm -fr ${gcfg.pgpDir}
+      rm -fr ${escapeShellArg gcfg.envDir}
+      rm -fr ${escapeShellArg gcfg.pgpDir}
     }
     trap cleanup EXIT
 
     umask u=rwx,g=,o=
-    mkdir -p ${gcfg.envDir}
-    mkdir -p ${gcfg.pgpDir}
+    mkdir -p ${escapeShellArg gcfg.envDir}
+    mkdir -p ${escapeShellArg gcfg.pgpDir}
     umask 0022
 
     prompt AWS_ACCESS_KEY_ID
     prompt AWS_SECRET_ACCESS_KEY SECRET
 
-    writeVar AWS_ACCESS_KEY_ID     ${gcfg.envDir}/10-aws.sh
-    writeVar AWS_SECRET_ACCESS_KEY ${gcfg.envDir}/10-aws.sh
+    writeVar AWS_ACCESS_KEY_ID     ${escapeShellArg (gcfg.envDir + "/10-aws.sh")}
+    writeVar AWS_SECRET_ACCESS_KEY ${escapeShellArg (gcfg.envDir + "/10-aws.sh")}
   '' + (if gcfg.usePassphrase
   then ''
     prompt PASSPHRASE SECRET
-    writeVar PASSPHRASE ${gcfg.envDir}/20-passphrase.sh
+    writeVar PASSPHRASE ${escapeShellArg (gcfg.envDir + "/20-passphrase.sh")}
   ''
   else ''
     ${pkgs.expect}/bin/expect << EOF
       set timeout 10
 
-      spawn ${pkgs.gnupg}/bin/gpg --homedir ${gcfg.pgpDir} --generate-key --passphrase "" --pinentry-mode loopback
+      spawn ${pkgs.gnupg}/bin/gpg --homedir ${escapeShellArg gcfg.pgpDir} --generate-key --passphrase "" --pinentry-mode loopback
 
       expect "Real name: " { send "Duplicity Backup\r" }
       expect "Email address: " { send "\r" }
@@ -63,9 +63,8 @@ let
       interact
     EOF
   '') + ''
-      trap EXIT
-   ''
-);
+    trap EXIT
+  '');
 
   mkSecurePathsOption =
     { description
