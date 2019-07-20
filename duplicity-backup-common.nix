@@ -20,8 +20,9 @@ let
     mkdir -p ${gcfg.pgpDir}
     umask 0022
 
+    printf "AWS_ACCESS_KEY_ID="; read AWS_ACCESS_KEY_ID
+
     stty -echo
-    printf "AWS_ACCESS_KEY_ID="; read AWS_ACCESS_KEY_ID; echo
     printf "AWS_SECRET_ACCESS_KEY="; read AWS_SECRET_ACCESS_KEY; echo
     stty echo
 
@@ -31,8 +32,8 @@ let
   then ''
     stty -echo
     printf "PASSPHRASE="; read PASSPHRASE; echo
-    writeVar PASSPHRASE ${gcfg.envDir}/20-passphrase.sh
     stty echo
+    writeVar PASSPHRASE ${gcfg.envDir}/20-passphrase.sh
   ''
   else ''
     ${pkgs.expect}/bin/expect << EOF
