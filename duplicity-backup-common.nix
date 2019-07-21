@@ -6,6 +6,33 @@ let
   duplicityGenKeys = pkgs.writeScriptBin "duplicity-gen-keys" (''
     #!${pkgs.stdenv.shell}
 
+    usage()
+    {
+        cat <<EOF
+    duplicity-gen-keys [--help] [--no-aws | --aws profile]
+
+    where:
+        --help   show this help text
+        --no-aws do not use AWS auto-detection
+        --aws    auto-detect AWS credentials from ~/.aws/credentials
+    EOF
+    }
+
+    while [ "$#" -gt 0 ]; do
+      case "$1" in
+        --help)
+            usage
+            exit
+            ;;
+        --no-aws | --aws)
+            [ -n "''${AWS_PROFILE+SET}" ] && echo "Conflicting AWS options" && exit 4
+            PROFILE=
+            [ "$1" == "--aws" ] && shift && PROFILE="$1"
+            AWS_PROFILE="$PROFILE"
+      esac
+      shift
+    done
+
     writeVar() {
       VAR="$1"
       FILE="$2"
