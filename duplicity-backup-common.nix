@@ -19,7 +19,7 @@ let
 
       [ "$2" = "SECRET" ] && stty -echo
       printf '%s=' "$VAR"
-      IFS= read "$VAR"
+      IFS= read -r "$VAR"
       [ "$2" = "SECRET" ] && stty echo
       [ "$2" = "SECRET" ] && printf '\n'
     }
