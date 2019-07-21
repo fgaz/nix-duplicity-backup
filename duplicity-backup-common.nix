@@ -11,7 +11,7 @@ let
       FILE="$2"
 
       touch "$FILE"
-      printf 'export %s=%q\n' "''${VAR}" "''${!VAR}" >> "$FILE"
+      printf 'export %s=%q\n' "$VAR" "''${!VAR}" >> "$FILE"
     }
 
     prompt() {
