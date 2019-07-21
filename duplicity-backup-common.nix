@@ -38,8 +38,28 @@ let
     mkdir -p ${escapeShellArg gcfg.pgpDir}
     umask 0022
 
-    prompt AWS_ACCESS_KEY_ID
-    prompt AWS_SECRET_ACCESS_KEY SECRET
+    AWS_FILE=$(eval echo "~$SUDO_USER/.aws/credentials")
+    if [ -e "$AWS_FILE" ]; then
+      if [ -z "''${AWS_PROFILE+SET}" ]; then
+        printf 'AWS credentials file(%s) exists. Use [ --no-aws | --aws profile ].' "~$SUDO_USER/.aws/credentials"
+        exit 2
+      fi
+
+      if [ -n "$AWS_PROFILE" ]; then
+        { read -r AWS_ACCESS_KEY_ID;
+          read -r AWS_SECRET_ACCESS_KEY;
+        } < <(sed -n '/^\['"$AWS_PROFILE"'\]/,/^\[.\+\]/{ # Get section that starts with $AWS_PROFILE
+                s/aws_access_key_id *= *//p;              # Print AWS_ACCESS_KEY_ID
+                s/aws_secret_access_key *= *//p           # Print AWS_SECRET_ACCESS_KEY
+              }' < "$AWS_FILE")
+      else
+        prompt AWS_ACCESS_KEY_ID
+        prompt AWS_SECRET_ACCESS_KEY SECRET
+      fi
+    else
+      prompt AWS_ACCESS_KEY_ID
+      prompt AWS_SECRET_ACCESS_KEY SECRET
+    fi
 
     writeVar AWS_ACCESS_KEY_ID     ${escapeShellArg (gcfg.envDir + "/10-aws.sh")}
     writeVar AWS_SECRET_ACCESS_KEY ${escapeShellArg (gcfg.envDir + "/10-aws.sh")}
