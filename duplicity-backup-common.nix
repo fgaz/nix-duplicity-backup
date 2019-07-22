@@ -76,10 +76,10 @@ let
         { read -r AWS_ACCESS_KEY_ID;
           read -r AWS_SECRET_ACCESS_KEY;
         } < <(sed -n '/^\['"$AWS_PROFILE"'\]/,/^\[.\+\]/{ # Get section that starts with $AWS_PROFILE
-                /^aws_access_key_id *= */s///p;           # Print AWS_ACCESS_KEY_ID
-                /^aws_secret_access_key *= */x;           # Save AWS_SECRET_ACCESS_KEY
-              }; $x;$s/^aws_secret_access_key *= *//p     # Print AWS_SECRET_ACCESS_KEY last
-              ' < "$AWS_FILE")
+                /^aws_access_key_id *= */    s//0 /p;     # Extract AWS_ACCESS_KEY_ID
+                /^aws_secret_access_key *= */s//1 /p;     # Extract AWS_SECRET_ACCESS_KEY
+              };
+              ' < "$AWS_FILE" | sort | cut -d' ' -f2-)
       else
         prompt AWS_ACCESS_KEY_ID
         prompt AWS_SECRET_ACCESS_KEY SECRET
