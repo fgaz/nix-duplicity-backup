@@ -9,12 +9,13 @@ let
     usage()
     {
         cat <<EOF
-    duplicity-gen-keys [--help] [--no-aws | --aws profile]
+    duplicity-gen-keys [--help] [--no-aws | --aws profile] [--update]
 
     where:
         --help   show this help text
         --no-aws do not use AWS auto-detection
         --aws    auto-detect AWS credentials from ~/.aws/credentials
+        --update add new keys to the system and archive the past keys
     EOF
     }
 
@@ -23,6 +24,9 @@ let
         --help)
             usage
             exit
+            ;;
+        --update)
+            UPDATE=
             ;;
         --no-aws | --aws)
             [ -n "''${AWS_PROFILE+SET}" ] && echo "Conflicting AWS options" && exit 4
@@ -51,24 +55,36 @@ let
       [ "$2" = "SECRET" ] && printf '\n'
     }
 
-    [ -e ${escapeShellArg gcfg.envDir} ] && printf "WARNING: The environment directory(%s) exists." ${escapeShellArg gcfg.envDir} && exit 1
-    [ -e ${escapeShellArg gcfg.pgpDir} ] && printf "WARNING: The PGP home directory(%s) exists."    ${escapeShellArg gcfg.pgpDir} && exit 1
+    if [ -z "''${UPDATE+SET}" ]; then
+      if [ -e ${escapeShellArg gcfg.envDir} ]; then
+        printf "The environment directory(%s) exists. Use --update to archive it." ${escapeShellArg gcfg.envDir};
+        exit 1
+      elif [ -e ${escapeShellArg gcfg.pgpDir} ]; then
+        printf "The PGP home directory(%s) exists. Use --update to archive it." ${escapeShellArg gcfg.pgpDir}
+        exit 1
+      fi
+    fi
 
-    cleanup () {
-      rm -fr ${escapeShellArg gcfg.envDir}
-      rm -fr ${escapeShellArg gcfg.pgpDir}
-    }
-    trap cleanup EXIT
+    NEW_ENV=${escapeShellArg (gcfg.envDir + ".d")}
+    NEW_ENV="$NEW_ENV/$(date -Iseconds)"
+    NEW_PGP=${escapeShellArg (gcfg.pgpDir + ".d")}
+    NEW_PGP="$NEW_PGP/$(date -Iseconds)"
 
     umask u=rwx,g=,o=
-    mkdir -p ${escapeShellArg gcfg.envDir}
-    mkdir -p ${escapeShellArg gcfg.pgpDir}
+    mkdir -p "$NEW_ENV"
+    mkdir -p "$NEW_PGP"
     umask 0022
+
+    cleanup () {
+      rm -fr "$NEW_ENV"
+      rm -fr "$NEW_PGP"
+    }
+    trap cleanup EXIT
 
     AWS_FILE=$(eval echo "~$SUDO_USER/.aws/credentials")
     if [ -e "$AWS_FILE" ]; then
       if [ -z "''${AWS_PROFILE+SET}" ]; then
-        printf 'AWS credentials file(%s) exists. Use [ --no-aws | --aws profile ].' "~$SUDO_USER/.aws/credentials"
+        printf 'AWS credentials file(%s) exists. Use [ --no-aws | --aws profile ].\n' "~$SUDO_USER/.aws/credentials"
         exit 2
       fi
 
@@ -89,18 +105,18 @@ let
       prompt AWS_SECRET_ACCESS_KEY SECRET
     fi
 
-    writeVar AWS_ACCESS_KEY_ID     ${escapeShellArg (gcfg.envDir + "/10-aws.sh")}
-    writeVar AWS_SECRET_ACCESS_KEY ${escapeShellArg (gcfg.envDir + "/10-aws.sh")}
+    writeVar AWS_ACCESS_KEY_ID     "$NEW_ENV/10-aws.sh"
+    writeVar AWS_SECRET_ACCESS_KEY "$NEW_ENV/10-aws.sh"
   '' + (if gcfg.usePassphrase
   then ''
     prompt PASSPHRASE SECRET
-    writeVar PASSPHRASE ${escapeShellArg (gcfg.envDir + "/20-passphrase.sh")}
+    writeVar PASSPHRASE "$NEW_ENV/20-passphrase.sh"
   ''
   else ''
     ${pkgs.expect}/bin/expect << EOF
       set timeout 10
 
-      spawn ${pkgs.gnupg}/bin/gpg --homedir ${escapeShellArg gcfg.pgpDir} --generate-key --passphrase "" --pinentry-mode loopback
+      spawn ${pkgs.gnupg}/bin/gpg --homedir "$NEW_PGP" --generate-key --passphrase "" --pinentry-mode loopback
 
       expect "Real name: " { send "Duplicity Backup\r" }
       expect "Email address: " { send "\r" }
@@ -112,6 +128,12 @@ let
     EOF
   '') + ''
     trap EXIT
+
+    rm ${escapeShellArg gcfg.envDir}
+    rm ${escapeShellArg gcfg.pgpDir}
+
+    ln -s "$NEW_ENV" ${escapeShellArg gcfg.envDir}
+    ln -s "$NEW_PGP" ${escapeShellArg gcfg.pgpDir}
   '');
 
   mkSecurePathsOption =
