@@ -69,6 +69,8 @@ in
           /sys
           /tmp
           /usr
+          /etc/nixos/system-specific.nix
+          /etc/nixos/hardware-configuration.nix
           dcfg.cacheDir
           dcfg.envDir
         ] ++ cfg.extraExcludes;
