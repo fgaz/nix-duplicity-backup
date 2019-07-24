@@ -84,7 +84,7 @@ let
     AWS_FILE=$(eval echo "~$SUDO_USER/.aws/credentials")
     if [ -e "$AWS_FILE" ]; then
       if [ -z "''${AWS_PROFILE+SET}" ]; then
-        printf 'AWS credentials file(%s) exists. Use [ --no-aws | --aws profile ].\n' "~$SUDO_USER/.aws/credentials"
+        printf 'AWS credentials file(%s) exists. Use [ --no-aws | --aws profile ].\n' "$AWS_FILE"
         exit 2
       fi
 
