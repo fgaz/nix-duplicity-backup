@@ -82,24 +82,18 @@ let
     trap cleanup EXIT
 
     AWS_FILE=$(eval echo "~$SUDO_USER/.aws/credentials")
-    if [ -e "$AWS_FILE" ]; then
-      if [ -z "''${AWS_PROFILE+SET}" ]; then
-        printf 'AWS credentials file(%s) exists. Use [ --no-aws | --aws profile ].\n' "$AWS_FILE" 1>&2
-        exit 2
-      fi
+    if [ -e "$AWS_FILE" -a -z "''${AWS_PROFILE+SET}" ]; then
+      printf 'AWS credentials file(%s) exists. Use [ --no-aws | --aws profile ].\n' "$AWS_FILE" 1>&2
+      exit 2
+    fi
 
-      if [ -n "$AWS_PROFILE" ]; then
-        { read -r AWS_ACCESS_KEY_ID;
-          read -r AWS_SECRET_ACCESS_KEY;
-        } < <(sed -n '/^\['"$AWS_PROFILE"'\]/,/^\[.\+\]/{ # Get section that starts with $AWS_PROFILE
-                /^aws_access_key_id *= */    s//0 /p;     # Extract AWS_ACCESS_KEY_ID
-                /^aws_secret_access_key *= */s//1 /p;     # Extract AWS_SECRET_ACCESS_KEY
-              };
-              ' < "$AWS_FILE" | sort | cut -d' ' -f2-)
-      else
-        prompt AWS_ACCESS_KEY_ID
-        prompt AWS_SECRET_ACCESS_KEY SECRET
-      fi
+    if [ -e "$AWS_FILE" -a -n "$AWS_PROFILE" ]; then
+      { read -r AWS_ACCESS_KEY_ID;
+        read -r AWS_SECRET_ACCESS_KEY;
+      } < <(sed -n '/^\['"$AWS_PROFILE"'\]/,/^\[.\+\]/{ # Get section that starts with $AWS_PROFILE
+              /^aws_access_key_id *= */    s//0 /p;     # Extract AWS_ACCESS_KEY_ID
+              /^aws_secret_access_key *= */s//1 /p;     # Extract AWS_SECRET_ACCESS_KEY
+            }' < "$AWS_FILE" | sort | cut -d' ' -f2-)
     else
       prompt AWS_ACCESS_KEY_ID
       prompt AWS_SECRET_ACCESS_KEY SECRET
