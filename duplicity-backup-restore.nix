@@ -42,30 +42,33 @@ in
               default = gcfg.target;
             };
 
+            enableForce = mkOption {
+              type = types.bool;
+              default = false;
+            };
+
             script = mkOption {
               type = types.path;
               readOnly = true;
             };
           };
 
-          config.script = pkgs.writeScriptBin "duplicity-restore-${name}" ''
+          config.script = pkgs.writeScriptBin "duplicity-restore-${name}" (''
             for i in ${gcfg.envDir}/*; do
                source $i
             done
 
-            ${concatStringsSep "\n" (map (directory: ''
-              mkdir -p ${config.target + dirOf directory}
+            mkdir -p ${config.target + dirOf config.directory}
 
-              ${pkgs.duplicity}/bin/duplicity \
-                --force \
-                --archive-dir ${gcfg.cacheDir} \
-                --name ${name} \
-                --gpg-options "--homedir=${gcfg.pgpDir}" \
-            '' + optionalString (!gcfg.usePassphrase) ''--encrypt-key "Duplicity Backup" \'' + ''
-                ${config.destination} \
-                ${config.target + directory}
-            '') [ config.directory ])}
-          '';
+            ${pkgs.duplicity}/bin/duplicity \
+              --archive-dir ${gcfg.cacheDir} \
+              --name ${name} \
+              --gpg-options "--homedir=${gcfg.pgpDir}" \
+          '' + optionalString (config.enableForce) ''--force \
+          '' + optionalString (!gcfg.usePassphrase) ''--encrypt-key "Duplicity Backup" \'' + ''
+              ${config.destination} \
+              ${config.target + config.directory}
+          '');
         }
       ));
     };
