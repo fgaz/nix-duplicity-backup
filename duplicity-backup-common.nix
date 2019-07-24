@@ -29,7 +29,7 @@ let
             UPDATE=
             ;;
         --no-aws | --aws)
-            [ -n "''${AWS_PROFILE+SET}" ] && printf 'Multiple [ --aws | --no-aws ] flags.\n' && exit 4
+            [ -n "''${AWS_PROFILE+SET}" ] && printf 'Multiple [ --aws | --no-aws ] flags.\n' 1>&2 && exit 4
             PROFILE=
             [ "$1" == "--aws" ] && shift && PROFILE="$1"
             AWS_PROFILE="$PROFILE"
@@ -49,18 +49,18 @@ let
       VAR="$1"
 
       [ "$2" = "SECRET" ] && stty -echo
-      printf '%s=' "$VAR"
+      printf '%s=' "$VAR" 1>&2
       IFS= read -r "$VAR"
       [ "$2" = "SECRET" ] && stty echo
-      [ "$2" = "SECRET" ] && printf '\n'
+      [ "$2" = "SECRET" ] && printf '\n' 1>&2
     }
 
     if [ -z "''${UPDATE+SET}" ]; then
       if [ -e ${escapeShellArg gcfg.envDir} ]; then
-        printf "The environment directory(%s) exists. Use --update to archive it." ${escapeShellArg gcfg.envDir};
+        printf "The environment directory(%s) exists. Use --update to archive it." ${escapeShellArg gcfg.envDir} 1>&2
         exit 1
       elif [ -e ${escapeShellArg gcfg.pgpDir} ]; then
-        printf "The PGP home directory(%s) exists. Use --update to archive it." ${escapeShellArg gcfg.pgpDir}
+        printf "The PGP home directory(%s) exists. Use --update to archive it." ${escapeShellArg gcfg.pgpDir} 1>&2
         exit 1
       fi
     fi
@@ -84,7 +84,7 @@ let
     AWS_FILE=$(eval echo "~$SUDO_USER/.aws/credentials")
     if [ -e "$AWS_FILE" ]; then
       if [ -z "''${AWS_PROFILE+SET}" ]; then
-        printf 'AWS credentials file(%s) exists. Use [ --no-aws | --aws profile ].\n' "$AWS_FILE"
+        printf 'AWS credentials file(%s) exists. Use [ --no-aws | --aws profile ].\n' "$AWS_FILE" 1>&2
         exit 2
       fi
 
