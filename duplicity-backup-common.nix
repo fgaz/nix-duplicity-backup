@@ -29,7 +29,7 @@ let
             UPDATE=
             ;;
         --no-aws | --aws)
-            [ -n "''${AWS_PROFILE+SET}" ] && echo "Conflicting AWS options" && exit 4
+            [ -n "''${AWS_PROFILE+SET}" ] && printf 'Multiple [ --aws | --no-aws ] flags.\n' && exit 4
             PROFILE=
             [ "$1" == "--aws" ] && shift && PROFILE="$1"
             AWS_PROFILE="$PROFILE"
