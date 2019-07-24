@@ -1,0 +1,124 @@
+#+TITLE: nix-duplicity-backup
+* Prerequisites and installation
+
+  The canonical installation of nix-duplicity-backup is S3+Password.
+  An alternative to S3 is rsync/SSH, however this is currently disabled.
+  An alternative to Password login is the usage of GPG keys.
+  Any S3 bucket will work provided that ACL permissions are granted to your user.
+
+* Canonical Configuration
+
+  As an example, nix-duplicity-backup, the repository will be backed up.
+  An S3+Password configuration is used by default.
+  First, create a ~duplicity-backup-config.nix~ beside ~configuration.nix~:
+#+BEGIN_src nix
+  # This serves as a configuration file, no backups will be created,
+  # and this is a noop, sans assertions checking and duplicity key generation.
+  {
+    # This loads the services.duplicity-backup options.
+    imports = [ <nix-duplicity-backup/duplicity-backup.nix> ];
+
+    services.duplicity-backup = {
+      # This enabled interpretation of the duplicity-backup config,
+      # specifically assertions checking and duplicity-gen-keys.
+      enable = true;
+
+      # Use passphrase instead of GPG keys
+      usePassphrase = true;
+
+      # Add an archive to duplicity-backup
+      archives.nix-duplicity-backup = {
+        # The S3(or SSH) instance to upload the backups to
+        destination = s3://s3.REGION.amazonaws.com/BUCKETNAME/nix-duplicity-backup;
+
+        # A directory or file to back up
+        directory = <nix-duplicity-backup>;
+      };
+    };
+  }
+#+END_src
+
+* Credentials management
+
+  Under default configurations,
+  ~${envDir}~ is located in ~/var/keys/duplicity/env~,
+  ~${pgpDir}~ is located in ~/var/keys/duplicity/gnupg~.
+
+  With an S3 backend, ~duplicity-gen-keys~ will ask for
+  ~AWS_ACCESS_KEY_ID~ and ~AWS_SECRET_ACCESS_KEY~.
+  If you have previously used the AWS CLI,
+  then these can be found under ~$HOME/.aws/credentials~.
+  Otherwise, you need to check under
+  IAM > Users > [your user] > Security Credentials
+  on the Amazon AWS console.
+  Access key secrets are only shown upon creation,
+  so if you don't have an existing secret,
+  you'll have to generate a new access key ID.
+  These are statefully stored under ~${envDir}/10-aws.sh~
+
+  With passphrase enabled, it will prompt for a passphrase,
+  and store it under ~${envDir}/20-passphrase.sh~.
+
+  These are stored as Bash files, allowing you to load it imperatively using:
+#+BEGIN_src bash
+  for i in ${envDir}/*; do
+    . $i
+  done
+#+END_src
+
+  With GPG enabled, ~duplicity-gen-keys~ will generate GPG keys
+  and store it under in ~${pgpDir}~.
+  These can be loaded into your environment using
+#+BEGIN_src bash
+  export PGP_HOME_DIR=${pgpDir}
+#+END_src bash
+
+* Enabling backups
+
+  Backups can finally be enabled by adding the following to your ~configuration.nix~:
+#+BEGIN_src nix
+  {
+    imports = [ ./duplicity-backup-config.nix ];
+
+    # Adds the backup services and timers to systemd for periodic backups.
+    services.duplicity-backup.enableBackup = true;
+  }
+#+END_src
+
+ To verify that everything works, run ~systemctl start duplicity-nix-duplicity-backup~.
+
+* Configuration
+
+  More granular configurations are possible:
+#+BEGIN_src nix
+  {
+    services.duplicity-backup = {
+      archives.nix-duplicity-backup = {
+        # Use GPG keys instead of passphrase login
+        usePassphrase = false;
+
+        archives.nix-duplicity-backup = {
+          # Defaults to "01:15"
+          # This makes the backups run hourly instead of 01:15 localtime.
+          # More info in `man 7 systemd.time`, section CALENDAR EVENTS.
+          period = "hourly";
+
+          # Exclude files containing the name "secret" from being uploaded.
+          excludes = [ "*secret*" ];
+
+          # However, allow files containing the name "code_to_handle_secret" to be uploaded.
+          includes = [ "*code_to_handle_secret*" ];
+
+          # Only use a maximum bandwidth of 1 MB/s.
+          maxbw = 1 * 1000 * 1000;
+
+          # Use a full backup every week instead of every month.
+          fullIfOlderThan = "7D";
+
+          # And only keep 2 weeks worth of full backups
+          removeAllButNFull = 2;
+        };
+      };
+    };
+  }
+#+END_src

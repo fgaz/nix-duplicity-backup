@@ -1,0 +1,112 @@
+#+TITLE: Creation of a LiveCD for the restoration of a NixOS system backed up with nix-duplicity-backup
+
+* Background
+** NixOS LiveCD
+   NixOS provides a module for the creation of a LiveCD through ~config.system.build.isoImage~ [fn:livecd].
+   This creates a fully bootable LiveCD with the full build process, starting with GRUB to NixOS proper.
+   It would probably require a few patches for full disk encryption, alternatively,
+   it should be possible for the partitition alone to be encrypted instead of FDE.
+   Furthermore, automating the encryption process might not be fully containable in Nix [fn:nixsecrets] [fn:nixprivate].
+   Nix relies on reproducibility yet encryption relies on nonces and initialization --
+   a more comprehensive discussion can be found on the Nix Encryption RFC [fn:nixencryption].
+
+** nix-duplicity-backup
+   nix-duplicity-backup is a NixOS module initially authored by [[https://github.com/fgaz][fgaz]] and further modified by [[https://github.com/adrianparvino][adrianparvino]].
+   The patches by adrianparvino allows the usage and automation of the creation of
+   (a) GPG keys, or
+   (b) password files,
+   with a common interface.
+   The current architecture of nix-duplicity-backup requires the
+   installation of both restoration and backup scripts;
+   this poses a few problems;
+   (a) without FDE on the disk, mounting the flash drive will expose the identification files, and
+   (b) even with FDE on the disk, having the identication files bundled with the restoration script is somewhat sloppy.
+   nix-duplicity-backup is also currently unsuitable to be used directly for full system backups;
+   it requires users to manually specify the files to back up -- this is error-prone and tedious.
+
+* Proposed solution
+  In addition to the solution proper; this section will also contain solutions to
+  overcome the shortcomings of the modules specified in the background.
+
+** Full Disk Encryption on NixOS LiveCD
+   Full Disk Encryption for the LiveCD is achievable by using LVM instead of squashfs.
+   Alternatively, we can encrypt individual files in the LiveCD using GPG.
+   The GPG approach has the advantage of compatibility with ~<nixpkgs/nixos/modules/installer/cd-dvd/iso-image.nix>~,
+   and the identification files can simply be added with ~isoImage.contents~.
+   However, the LVM approach has the following advantages:
+   (1) as the ~.service~ file is located in ~/nix/store~, file encryption is not recommended, but possible,
+   (2) it requires no special treatment of individual files.
+
+** nix-duplicity-backup-system
+   nix-duplicity-backup-system will be a NixOS module which scans for enabled NixOS options.
+   Take, for example, the postgresql module [fn:postgresql];
+   if it is enabled, then backup the file located at ~services.postgresql.dataDir~.
+
+** Separation of restoration and backup
+   For this subsection, declare/define is used as in C.
+
+   nix-duplicity-backup configuration should be separated into 3 files --
+   (a) ~duplicity-backup-common.nix~
+   (b) ~duplicity-backup-backup.nix~
+   (c) ~duplicity-backup-restore.nix~
+
+   The ~duplicity-backup-common.nix~ declares the common interface between backup and restoration;
+   specifically, the backup directories and the backup destination.
+   Theoretically, this file should not contain any implementation, sans normalization.
+
+   The ~duplicity-backup-backup.nix~ is one definition of the declared common interface;
+   it will define the systemd services and timers for periodically backing up the directories to the directories.
+
+   The ~duplicity-backup-restore.nix~ is another definition of the declared common interface;
+   it will define shell scripts for restoration from backup destinations to their directories.
+   The restoration script should also allow one to change the target root location,
+   as the root file system would contain the LiveCD file system rather than the target's file system.
+
+** Solution proper
+   We define a new NixOS module which
+   (a) adds ~nix-duplicity-backup-system~ to the system, and
+   (b) creates a LiveCD containing ~duplicity-backup-restore~.
+   The output of ~nix-duplicity-backup-system~ shall be passed as
+   the input of ~duplicity-backup-restore~.
+
+   The LiveCD is  built and encrypted using ~./EncryptedCD~.
+   Adding everything to the LiveCD's ~/nix/store~,
+   and only maintaining symlinks to the system,
+   allows us to remove the need for multiple stages of decryption.
+
+   The LiveCD will be populated with the following files:
+   (a) The AWS S3 identity files
+   (b) The partition structure
+
+   Optionally, the LiveCD may also contain the following files:
+   (a) The duplicity GPG keys
+       By placing the duplicity GPG keys,
+       we are able to automate the decryption of the backup.
+   (b) The duplicity backups
+       It is also possible to store the backups directly to the USB drive,
+       allowing it to be restored without internet.
+
+   The partition structure can be generated using heuristics on ~mount~ and ~hardware-configuration.nix~.
+
+   The bootup process will be as follows:
+*** Decryption of ~/nix/store~
+    Upon bootup, the LiveCD will prompt the user for a decryption key.
+*** Rebuilding the partition structure
+    Using the partition structure provided by ~mount~ and ~hardware-configuration.nix~,
+    we are able to mimic the file structure of the original system.
+    Another key is then prompted for the decryption key of the restoration root.
+*** [OPTIONAL] Input of the duplicity GPG key
+    If the GPG identification keys are not saved into ~/nix/store~,
+    the GPG key is prompted using [fn:interactivesystemd].
+*** Duplicity restore
+    From here-on, everything should be automatically handled by ~duplicity-backup-restore.nix~.
+
+[fn:livecd] https://nixos.wiki/wiki/Creating_a_NixOS_live_CD
+[fn:nixsecrets] https://github.com/NixOS/nixpkgs/issues/24288
+[fn:nixprivate] https://github.com/NixOS/nix/issues/8
+[fn:nixencryption] https://github.com/edolstra/rfcs/blob/nix-encryption/rfcs/0005-nix-encryption.md
+
+[fn:postgresql] https://github.com/NixOS/nixpkgs/blob/release-18.09/nixos/modules/services/databases/postgresql.nix
+
+[fn:interactivesystemd] https://alan-mushi.github.io/2014/10/26/execute-an-interactive-script-at-boot-with-systemd.html
+[fn:nixosencryptedroot] https://gist.github.com/martijnvermaat/76f2e24d0239470dd71050358b4d5134
